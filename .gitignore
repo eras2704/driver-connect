@@ -1,0 +1,36 @@
+# Dependencias y salidas generadas
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+src/generated/prisma/
+.pnpm-store/
+
+# Credenciales, configuración local y datos privados
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.sql
+!prisma/migrations/**/migration.sql
+*.sqlite
+*.sqlite3
+*.db
+public/uploads/
+backups/
+
+# Herramientas y sistema
+.agents/
+.codex/
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+tmp/
