@@ -28,11 +28,11 @@ Para inspeccionar la aplicación antes del dominio, establecer un túnel desde t
 ssh -L 3000:127.0.0.1:3000 USUARIO@HOST_DE_LA_VM
 ```
 
-Después abrir `http://localhost:3000`. `USUARIO` y `HOST_DE_LA_VM` son marcadores que deben sustituirse con los datos reales de la instancia.
+Después abrir `http://127.0.0.1:3000`, con ese mismo valor en `APP_ORIGIN`. `USUARIO` y `HOST_DE_LA_VM` son marcadores que deben sustituirse con los datos reales de la instancia.
 
 ## Publicación
 
-Configurar un proxy HTTPS en la VM apuntando a `127.0.0.1:3000`. Permitir 80/443 para el sitio y restringir SSH a los orígenes administrativos necesarios. Mantener 3000 y 3306 sin exposición pública. Los accesos privados todavía no están implementados en esta base.
+Configurar un proxy HTTPS en la VM apuntando a `127.0.0.1:3000`. Permitir 80/443 para el sitio y restringir SSH a los orígenes administrativos necesarios. Mantener 3000 y 3306 sin exposición pública. Definir `APP_ORIGIN=https://TU_DOMINIO` en `.env` y recrear `app`; este valor controla la protección de formularios y activa la cookie Secure. Después crear la primera cuenta con `docker compose --profile tools run --rm admin-create` y acceder a `/login-admin`. No compartir contraseñas en el repositorio ni incorporarlas a las imágenes.
 
 ## Actualizaciones
 

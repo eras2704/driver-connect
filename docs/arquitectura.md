@@ -1,32 +1,39 @@
-# Arquitectura prevista
+# Arquitectura
 
-La implementación empieza desde cero. Esta base no contiene usuarios ni credenciales iniciales, y no habilita acceso a datos personales.
+La aplicación usa Next.js 16 con App Router y componentes de servidor. Prisma ORM 7 se conecta a MySQL 8.4 mediante `@prisma/adapter-mariadb`. La conexión se crea al solicitar datos; construir la imagen no requiere credenciales ni una base activa.
 
-El perfil visual de `/conductor/demo` usa datos ficticios y una imagen ilustrativa; también se muestra en `/`. La descarga vCard no contiene teléfono ni correo. Los enlaces de compartir se calculan a partir del origen donde se abre el perfil. No hay consultas de conductores reales ni reservas.
+Docker Compose administra la aplicación, una tarea de migración y MySQL con volumen persistente. Los perfiles de Compose `tools` y `test` contienen comandos de administración y pruebas que no arrancan como servicios permanentes. El destino previsto es una máquina virtual AWS; todavía no se ha creado ni desplegado.
 
-## Componentes
+## Rutas implementadas
 
-- Aplicación Next.js 16 con App Router, TypeScript y Tailwind CSS.
-- Prisma ORM 7 con MySQL 8.4. El esquema inicial contiene `Driver`, `Vehicle`, `Service`, `AdminUser` y `DriverUser`.
-- Docker Compose administra la aplicación, una tarea de migración y MySQL con volumen persistente.
-- Destino previsto: una máquina virtual en AWS, pendiente de seleccionar y configurar.
-
-## Rutas previstas, todavía no implementadas
-
-| Área | Ruta | Acceso previsto |
+| Área | Ruta | Acceso |
 | --- | --- | --- |
-| Perfil del conductor | `/conductor/[slug]` | Público, sólo campos autorizados |
+| Demostración ficticia | `/` y `/conductor/demo` | Público, sin MySQL |
+| Perfil publicado | `/conductor/[slug]` | Público, sólo campos autorizados |
+| Contacto publicado | `/conductor/[slug]/contacto` | Público, vCard |
 | Acceso administrativo | `/login-admin` | Formulario de autenticación |
-| Administración | `/admin` | Sesión administrativa validada |
-| Acceso del conductor | `/login-conductor` | Formulario de autenticación |
-| Panel del conductor | `/panel` | Sesión validada, sólo datos propios |
+| Resumen administrativo | `/admin` | Sesión administrativa vigente |
+| Lista de conductores | `/admin/conductores` | Sesión administrativa vigente |
+| Crear conductor | `/admin/conductores/nuevo` | Sesión administrativa vigente |
+| Editar conductor | `/admin/conductores/[id]/editar` | Sesión administrativa vigente |
+| API administrativa | `/api/admin/*` | Sesión y autorización en servidor, salvo acceso/salida |
 
-La tarjeta NFC guardará únicamente una URL pública estable. No guardará credenciales ni datos personales adicionales.
+El acceso y panel del conductor (`/login-conductor` y `/panel`) quedan pendientes. `DriverUser` reserva su modelo; todavía no habilita esa función.
 
-## Decisiones para la implementación funcional
+## Autenticación y autorización
 
-Definir los campos editables por el conductor, el proceso de aprobación de imágenes y cambios, y las reglas para publicación de datos de contacto. Implementar contraseñas con hash, sesiones firmadas, caducidad, revocación, protección de formularios y autorización en el servidor antes de habilitar áreas privadas.
+Las cuentas administrativas se crean por consola, con contraseñas bcrypt de coste 12. No existe registro abierto. Cada sesión usa un token aleatorio de 256 bits; MySQL conserva sólo su huella HMAC-SHA256, asociada a una cuenta y fecha de vencimiento. La cookie HttpOnly, SameSite=Lax, dura ocho horas y exige Secure cuando `APP_ORIGIN` usa HTTPS.
 
-Los campos de estado y verificación de conductores, vehículos y cuentas comienzan desactivados. Los identificadores internos, contraseñas y registros privados no deben serializarse hacia perfiles públicos.
+Cada lectura privada y mutación valida la sesión y el estado activo del administrador en el servidor. Cerrar sesión, restablecer la contraseña o desactivar la cuenta revoca el acceso. Cambiar `SESSION_SECRET` invalida todas las sesiones existentes. Las mutaciones requieren JSON, validación estricta y coincidencia exacta del encabezado Origin con APP_ORIGIN. Los cuerpos JSON se limitan a 32 KiB.
 
-El modelo permite varios vehículos por conductor y una cuenta privada por conductor. Validar estas decisiones antes de incorporar datos reales. Las migraciones posteriores deben conservar el historial; no se debe editar una migración ya aplicada.
+Los intentos de acceso se limitan en MySQL por ventanas de 15 minutos: ocho por nombre de usuario y 200 globales. Los contadores persisten entre reinicios y no dependen de encabezados IP de confianza incierta. Los mensajes de contraseña incorrecta y usuario inexistente son iguales. Este límite básico no sustituye un control de tráfico en el proxy cuando se publique en Internet.
+
+## Datos y publicación
+
+Las escrituras de perfil, vehículo y servicios se ejecutan en una transacción. Los perfiles nacen como borradores. Publicar habilita inmediatamente la URL; retirar la publicación conserva los datos y oculta el perfil y su vCard. La dirección queda fija después de crear el conductor, por lo que una tarjeta NFC puede seguir usando la misma URL.
+
+Las consultas públicas seleccionan campos explícitos. No incluyen identificadores internos, usuarios, contraseñas ni placas. Sólo muestran servicios y vehículo activos. Los perfiles usan renderizado dinámico para que un retiro de publicación no dependa de la expiración de una caché.
+
+La interfaz administra un vehículo principal aunque el modelo admite varios para futuras etapas. Quitar el vehículo del formulario lo desactiva y conserva el registro. Las fotografías son enlaces HTTPS opcionales cargados directamente por el navegador; el servidor no descarga ni optimiza URLs externas proporcionadas en el panel.
+
+La tarjeta NFC guardará únicamente la URL pública estable. La programación física aún no está implementada.

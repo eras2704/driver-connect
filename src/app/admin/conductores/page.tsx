@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { listDrivers } from "@/lib/drivers";
+
+export default async function DriversPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
+  const params = await searchParams;
+  const query = typeof params.q === "string" ? params.q.trim().slice(0, 120) : "";
+  const page = Math.min(100000, Math.max(1, parseInt(params.page || "1", 10) || 1));
+  const { drivers, total } = await listDrivers(query, page);
+  const pageHref = (number: number) => `/admin/conductores?${new URLSearchParams({ q: query, page: String(number) })}`;
+  return <><div className="admin-heading"><div><span className="eyebrow">TU COMUNIDAD</span><h1>Conductores.</h1><p>{total} {total === 1 ? "perfil" : "perfiles"}{query ? ` para “${query}”` : " registrados"}</p></div><Link className="button button-primary" href="/admin/conductores/nuevo">+ Nuevo conductor</Link></div><form className="admin-search" action="/admin/conductores"><label className="sr-only" htmlFor="q">Buscar por nombre o dirección</label><input id="q" name="q" defaultValue={query} placeholder="Buscar por nombre o dirección" maxLength={120} /><button className="button button-secondary">Buscar</button>{query && <Link href="/admin/conductores">Limpiar</Link>}</form><section className="admin-card">{drivers.length ? <ul className="driver-list">{drivers.map((driver) => <li key={driver.id}><div><strong>{driver.name}</strong><span>/conductor/{driver.slug}</span></div><span className={`status-pill ${driver.active ? "published" : ""}`}>{driver.active ? "Publicado" : "Borrador"}</span>{driver.active && <Link href={`/conductor/${driver.slug}`} target="_blank" rel="noopener noreferrer">Ver perfil ↗</Link>}<Link href={`/admin/conductores/${driver.id}/editar`}>Editar →</Link></li>)}</ul> : <div className="admin-empty"><h3>{query ? "No encontramos coincidencias." : "Todavía no hay conductores."}</h3><p>{query ? "Prueba con otro nombre o dirección." : "Crea el primer perfil para comenzar."}</p></div>}</section>{total > 20 && <nav className="pagination" aria-label="Páginas de conductores">{page > 1 && <Link href={pageHref(page - 1)}>← Anterior</Link>}<span>Página {page} de {Math.ceil(total / 20)}</span>{page * 20 < total && <Link href={pageHref(page + 1)}>Siguiente →</Link>}</nav>}</>;
+}

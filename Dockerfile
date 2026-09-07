@@ -12,7 +12,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS builder
 COPY . .
-RUN pnpm lint && pnpm typecheck && pnpm db:validate && pnpm build
+RUN pnpm lint && pnpm typecheck && pnpm db:validate && pnpm test && pnpm build
 
 FROM builder AS migrator
 USER node

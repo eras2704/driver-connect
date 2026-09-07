@@ -4,7 +4,9 @@
   "private": true,
   "packageManager": "pnpm@11.19.0",
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build --webpack",
@@ -15,16 +17,25 @@
     "db:validate": "prisma validate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "admin:create": "node --import tsx scripts/create-admin.ts",
+    "test": "node --import tsx --test tests/unit/*.test.ts",
+    "test:integration": "node --import tsx --test tests/integration/*.test.ts"
   },
   "dependencies": {
+    "@prisma/adapter-mariadb": "7.10.0",
     "@prisma/client": "^7.0.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.0.0",
     "next": "^16.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@inquirer/input": "^5.1.5",
+    "@inquirer/password": "^5.2.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
@@ -33,6 +44,7 @@
     "eslint-config-next": "^16.0.0",
     "prisma": "^7.0.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.23.13",
     "typescript": "^5.0.0"
   }
 }

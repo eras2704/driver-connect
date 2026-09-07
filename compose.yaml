@@ -38,6 +38,7 @@ services:
     environment:
       DATABASE_URL: mysql://driver_connect:${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}@db:3306/driver_connect
       SESSION_SECRET: ${SESSION_SECRET:?Define SESSION_SECRET en .env}
+      APP_ORIGIN: ${APP_ORIGIN:-http://127.0.0.1:3000}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -51,6 +52,43 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+
+  admin-create:
+    profiles: [tools]
+    build:
+      context: .
+      target: migrator
+    command: [pnpm, admin:create]
+    stdin_open: true
+    tty: true
+    environment:
+      DATABASE_URL: mysql://driver_connect:${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}@db:3306/driver_connect
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  test:
+    profiles: [test]
+    build:
+      context: .
+      target: migrator
+    command: [pnpm, test:integration]
+    environment:
+      DATABASE_URL: mysql://driver_connect:${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}@db:3306/driver_connect
+      SESSION_SECRET: ${SESSION_SECRET:?Define SESSION_SECRET en .env}
+      APP_ORIGIN: ${APP_ORIGIN:-http://127.0.0.1:3000}
+      TEST_BASE_URL: http://app:3000
+      ALLOW_INTEGRATION_TESTS: ${ALLOW_INTEGRATION_TESTS:-0}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      app:
+        condition: service_healthy
 
 volumes:
   mysql_data:

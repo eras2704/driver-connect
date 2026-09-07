@@ -2,15 +2,15 @@
 import { useState } from "react";
 import { Icon } from "./icon";
 
-export function ShareProfile() {
+export function ShareProfile({ path = "/conductor/demo", title = "Daniel Ríos · Driver Connect (muestra)" }: { path?: string; title?: string }) {
   const [status, setStatus] = useState("");
   const [manualUrl, setManualUrl] = useState("");
   async function share() {
-    const url = new URL("/conductor/demo", window.location.origin).href;
+    const url = new URL(path, window.location.origin).href;
     setStatus("");
     setManualUrl("");
     if (navigator.share) {
-      try { await navigator.share({ title: "Daniel Ríos · Driver Connect (muestra)", url }); return; }
+      try { await navigator.share({ title, url }); return; }
       catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; }
     }
     try { await navigator.clipboard.writeText(url); setStatus("Enlace copiado."); }

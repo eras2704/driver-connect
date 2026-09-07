@@ -1,4 +1,4 @@
-name: Validate Docker base
+name: Validate Docker and administration
 
 on:
   push:
@@ -19,8 +19,8 @@ jobs:
           python3 - <<'PY'
           import secrets
           from pathlib import Path
-          keys = ('MYSQL_PASSWORD', 'MYSQL_ROOT_PASSWORD', 'SESSION_SECRET')
-          Path('.env').write_text(''.join(f'{key}={secrets.token_hex(32)}\n' for key in keys))
+          keys = ('MYSQL_PASSWORD', 'MYSQL_ROOT_PASSWORD', 'SESSION_SECRET', 'ADMIN_PASSWORD')
+          Path('.env').write_text(''.join(f'{key}={secrets.token_hex(32)}\n' for key in keys) + 'APP_ORIGIN=http://127.0.0.1:3000\nADMIN_USERNAME=ci-admin\nADMIN_NAME=CI Admin\nALLOW_INTEGRATION_TESTS=1\n')
           Path('.env').chmod(0o600)
           PY
       - name: Validate Compose configuration
@@ -38,6 +38,10 @@ jobs:
           curl --fail --silent --output /dev/null http://127.0.0.1:3000/images/demo-suv.png
           curl --fail --silent --output /dev/null 'http://127.0.0.1:3000/_next/image?url=%2Fimages%2Fdemo-suv.png&w=640&q=75'
           docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT COUNT(*) FROM Driver; SELECT COUNT(*) FROM Vehicle; SELECT COUNT(*) FROM Service; SELECT COUNT(*) FROM AdminUser; SELECT COUNT(*) FROM DriverUser;"'
+      - name: Create disposable administrator
+        run: docker compose --profile tools run --rm -T admin-create
+      - name: Verify sessions, permissions and driver lifecycle against MySQL
+        run: docker compose --profile test run --rm -T test
       - name: Show logs on failure
         if: failure()
         run: docker compose logs --tail=100 app migrate db

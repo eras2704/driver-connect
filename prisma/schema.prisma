@@ -7,7 +7,7 @@ datasource db {
   provider = "mysql"
 }
 
-// Modelo inicial, pendiente de validación funcional antes de la primera migración.
+// Los perfiles nuevos permanecen en borrador hasta su publicación administrativa.
 model Driver {
   id          String      @id @default(cuid())
   slug        String      @unique @db.VarChar(191)
@@ -67,6 +67,26 @@ model AdminUser {
   active       Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  tokenHash String    @id @db.VarChar(64)
+  adminId   String
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model AdminLoginAttempt {
+  key       String   @id @db.VarChar(128)
+  attempts  Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }
 
 model DriverUser {
