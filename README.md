@@ -6,7 +6,9 @@ Repositorio privado: [eras2704/driver-connect](https://github.com/eras2704/drive
 
 ## Estado
 
-Proyecto iniciado desde cero. Incluye Next.js 16, React, TypeScript, Tailwind CSS, esquema inicial de Prisma 7 para MySQL, Docker Compose y una página de preparación. Todavía no implementa perfiles, sesiones, paneles, formularios, carga de imágenes ni programación NFC. La aplicación inicial no realiza consultas a MySQL.
+Proyecto iniciado desde cero. Incluye Next.js 16, React, TypeScript, Tailwind CSS, esquema inicial de Prisma 7 para MySQL, Docker Compose y un perfil visual de demostración en `/` y `/conductor/demo`.
+
+El perfil de Daniel Ríos es ficticio. Permite descargar una vCard de muestra sin datos de contacto reales, compartir el enlace y consultar servicios y vehículo. WhatsApp y correo están deshabilitados de forma explícita. Todavía no implementa perfiles conectados a la base de datos, sesiones, paneles, formularios, carga de imágenes ni programación NFC. La aplicación no realiza consultas a MySQL.
 
 El PDF en [docs](docs/Documentacion_Provisional_Driver_Connect_v0.1.pdf) es una referencia funcional de un prototipo anterior; sus componentes marcados como funcionales no representan el estado de este código.
 
@@ -32,7 +34,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-La página inicial funciona sin MySQL. Para trabajar con migraciones, copia `.env.example` a `.env`, configura `DATABASE_URL` con una base MySQL de desarrollo y ejecuta `pnpm db:migrate`.
+El perfil de demostración funciona sin MySQL. Para trabajar con migraciones, copia `.env.example` a `.env`, configura `DATABASE_URL` con una base MySQL de desarrollo y ejecuta `pnpm db:migrate`.
 
 ```bash
 pnpm lint
@@ -44,6 +46,8 @@ pnpm build
 ## Estructura
 
 - `src/app/`: aplicación Next.js y estilos.
+- `src/components/`: perfil, iconos y control de compartir.
+- `public/images/`: imagen ilustrativa incluida en el contenedor.
 - `prisma/`: modelo de datos y migraciones versionadas.
 - `prisma.config.ts`: configuración de las herramientas de Prisma.
 - `Dockerfile` y `compose.yaml`: aplicación, migraciones y MySQL.
@@ -61,6 +65,8 @@ git push -u origin codex/nombre-del-cambio
 ```
 
 Abre un pull request a `main` después de validar el cambio. No subas `.env`, claves, respaldos de MySQL ni fotografías o datos reales de conductores; están excluidos donde corresponde por `.gitignore`.
+
+GitHub Actions construye las imágenes, comprueba código y tipos, inicia MySQL, aplica las migraciones y verifica las páginas, la descarga de contacto y la imagen del perfil.
 
 ## Próxima etapa
 

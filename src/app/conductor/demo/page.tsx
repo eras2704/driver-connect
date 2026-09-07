@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import "./globals.css";
-
+import { DriverProfile } from "@/components/driver-profile";
 export const metadata: Metadata = {
   title: "Daniel Ríos · Perfil de muestra | Driver Connect",
   description: "Perfil ficticio de muestra de Driver Connect: conductor privado, servicios y vehículo en Panamá.",
-  robots: { index: false, follow: false },
 };
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}</body></html>;
-}
+export default function DemoProfile() { return <DriverProfile />; }

@@ -29,7 +29,14 @@ jobs:
         run: docker compose up --detach --build --wait --wait-timeout 180
       - name: Verify page and migrated schema
         run: |
-          curl --fail --silent http://127.0.0.1:3000 | grep -q 'Driver Connect'
+          curl --fail --silent --output /tmp/home.html http://127.0.0.1:3000
+          grep -q 'Driver Connect' /tmp/home.html
+          curl --fail --silent --output /tmp/profile.html http://127.0.0.1:3000/conductor/demo
+          grep -q 'Daniel' /tmp/profile.html
+          curl --fail --silent --output /tmp/contact.vcf http://127.0.0.1:3000/conductor/demo/contacto
+          grep -q 'BEGIN:VCARD' /tmp/contact.vcf
+          curl --fail --silent --output /dev/null http://127.0.0.1:3000/images/demo-suv.png
+          curl --fail --silent --output /dev/null 'http://127.0.0.1:3000/_next/image?url=%2Fimages%2Fdemo-suv.png&w=640&q=75'
           docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT COUNT(*) FROM Driver; SELECT COUNT(*) FROM Vehicle; SELECT COUNT(*) FROM Service; SELECT COUNT(*) FROM AdminUser; SELECT COUNT(*) FROM DriverUser;"'
       - name: Show logs on failure
         if: failure()

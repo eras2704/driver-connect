@@ -2,6 +2,8 @@
 
 La implementación empieza desde cero. Esta base no contiene usuarios ni credenciales iniciales, y no habilita acceso a datos personales.
 
+El perfil visual de `/conductor/demo` usa datos ficticios y una imagen ilustrativa; también se muestra en `/`. La descarga vCard no contiene teléfono ni correo. Los enlaces de compartir se calculan a partir del origen donde se abre el perfil. No hay consultas de conductores reales ni reservas.
+
 ## Componentes
 
 - Aplicación Next.js 16 con App Router, TypeScript y Tailwind CSS.
