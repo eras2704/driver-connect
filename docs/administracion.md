@@ -37,4 +37,8 @@ En CI, la herramienta puede recibir `ADMIN_USERNAME`, `ADMIN_NAME` y `ADMIN_PASS
 
 ## Límites de esta etapa
 
-No se incluyen autorregistro, recuperación por correo, segundo factor, gestión de administradores desde el panel, carga de archivos ni acceso del conductor. El catálogo se inicializa con tres servicios y el panel permite asignarlos. El despliegue real en AWS, dominio, HTTPS y respaldos quedan como siguiente fase.
+El acceso del conductor se gestiona desde la edición de su perfil: Gestionar acceso del conductor. La nueva cuenta exige sustituir la contraseña temporal al entrar. Restablecer el acceso elimina sesiones y revoca su conexión de calendario.
+
+Las reservas se consultan en /admin/reservas y cada conductor gestiona las suyas en /panel/agenda.
+
+No se incluyen autorregistro, recuperación por correo, segundo factor, gestión de administradores desde el panel ni carga de archivos. El catálogo se inicializa con tres servicios y el panel permite asignarlos. El despliegue real en AWS, dominio, HTTPS y respaldos quedan como siguiente fase.

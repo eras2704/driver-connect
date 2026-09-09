@@ -34,6 +34,12 @@ Después abrir `http://127.0.0.1:3000`, con ese mismo valor en `APP_ORIGIN`. `US
 
 Configurar un proxy HTTPS en la VM apuntando a `127.0.0.1:3000`. Permitir 80/443 para el sitio y restringir SSH a los orígenes administrativos necesarios. Mantener 3000 y 3306 sin exposición pública. Definir `APP_ORIGIN=https://TU_DOMINIO` en `.env` y recrear `app`; este valor controla la protección de formularios y activa la cookie Secure. Después crear la primera cuenta con `docker compose --profile tools run --rm admin-create` y acceder a `/login-admin`. No compartir contraseñas en el repositorio ni incorporarlas a las imágenes.
 
+## Calendarios y comprobación del servicio
+
+`APP_ORIGIN` debe coincidir exactamente con la dirección pública HTTPS. El proxy redirige HTTP a HTTPS y conserva las rutas `/calendario/*`; el acceso a esas rutas se valida con la firma privada del enlace y no requiere cookies de sesión. Evita registrar las URL completas de `/reserva/*` y `/calendario/*` en analítica, logs de acceso o servicios de terceros, porque contienen permisos de lectura.
+
+`/api/health` comprueba la conexión real a MySQL y devuelve sólo `ok` o `unavailable`. Docker usa ese endpoint como healthcheck. Después de publicar, comprobar la apertura y sincronización en teléfonos Android e iPhone reales. La integración HTTP no sustituye esa comprobación.
+
 ## Actualizaciones
 
 Respaldar MySQL y comprobar la restauración antes de aplicar cambios de esquema. Actualizar el código desde `main`, construir las imágenes y ejecutar explícitamente las migraciones:

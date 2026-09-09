@@ -18,7 +18,9 @@ Docker Compose administra la aplicación, una tarea de migración y MySQL con vo
 | Editar conductor | `/admin/conductores/[id]/editar` | Sesión administrativa vigente |
 | API administrativa | `/api/admin/*` | Sesión y autorización en servidor, salvo acceso/salida |
 
-El acceso y panel del conductor (`/login-conductor` y `/panel`) quedan pendientes. `DriverUser` reserva su modelo; todavía no habilita esa función.
+El acceso del conductor está implementado en `/login-conductor`, con panel `/panel`, agenda `/panel/agenda`, perfil `/panel/perfil`, seguridad `/panel/seguridad` y conexión `/panel/calendario`. Cada lectura y mutación privada verifica la sesión y la propiedad de los datos. `DriverSession`, `Booking` y `RequestLimit` amplían el esquema sin reemplazar las migraciones anteriores.
+
+Las solicitudes públicas llegan por `/conductor/[slug]/reservar`. `/reserva/[id]/[token]` permite al pasajero consultar sólo ese viaje. Las suscripciones usan `/calendario/reserva/[id]/[token]` y `/calendario/conductor/[id]/[token]`, con firmas revocables; no dependen de cookies de navegador. Ver [agenda y calendarios](agenda-calendarios.md).
 
 ## Autenticación y autorización
 

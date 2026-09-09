@@ -20,7 +20,7 @@
     "db:studio": "prisma studio",
     "admin:create": "node --import tsx scripts/create-admin.ts",
     "test": "node --import tsx --test tests/unit/*.test.ts",
-    "test:integration": "node --import tsx --test tests/integration/*.test.ts"
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "7.10.0",

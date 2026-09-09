@@ -27,6 +27,7 @@ model Driver {
   vehicles    Vehicle[]
   services    Service[]
   user        DriverUser?
+  bookings    Booking[]
 }
 
 model Vehicle {
@@ -95,7 +96,62 @@ model DriverUser {
   username     String   @unique @db.VarChar(191)
   passwordHash String   @db.VarChar(255)
   active       Boolean  @default(false)
+  mustChangePassword Boolean @default(true)
+  calendarVersion Int @default(0)
+  calendarEnabled Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   driver       Driver   @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  sessions     DriverSession[]
+}
+
+model DriverSession {
+  tokenHash String @id @db.VarChar(64)
+  userId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user DriverUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+}
+
+model Booking {
+  id String @id @default(cuid())
+  driverId String
+  serviceName String @db.VarChar(191)
+  customerName String @db.VarChar(100)
+  phone String @db.VarChar(32)
+  email String? @db.VarChar(191)
+  pickup String @db.VarChar(250)
+  destination String @db.VarChar(250)
+  notes String? @db.Text
+  passengers Int @default(1)
+  startsAt DateTime
+  endsAt DateTime
+  status BookingStatus @default(PENDING)
+  source String @default("REQUEST") @db.VarChar(16)
+  version Int @default(0)
+  wasConfirmed Boolean @default(false)
+  passengerVersion Int @default(0)
+  requestHash String? @unique @db.VarChar(64)
+  payloadHash String? @db.VarChar(64)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  @@index([driverId, startsAt])
+  @@index([driverId, status, startsAt])
+}
+
+model RequestLimit {
+  key String @id @db.VarChar(128)
+  attempts Int @default(0)
+  expiresAt DateTime
+  @@index([expiresAt])
 }

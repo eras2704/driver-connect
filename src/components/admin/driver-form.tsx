@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DriverInput } from "@/lib/validation";
 
-export function DriverForm({ id, initial, services }: { id?: string; initial?: DriverInput; services: { id: string; name: string }[] }) {
+export function DriverForm({ id, initial, services, mode = "admin" }: { mode?: "admin" | "driver"; id?: string; initial?: DriverInput; services: { id: string; name: string }[] }) {
   const router = useRouter();
   const [vehicleEnabled, setVehicleEnabled] = useState(Boolean(initial?.vehicle));
   const [pending, setPending] = useState(false);
@@ -25,11 +25,13 @@ export function DriverForm({ id, initial, services }: { id?: string; initial?: D
     };
     setPending(true); setError(""); setErrors({});
     try {
-      const response = await fetch(id ? `/api/admin/conductores/${id}` : "/api/admin/conductores", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const ownProfile = { name: payload.name, phone: payload.phone, whatsapp: payload.whatsapp, email: payload.email, location: payload.location, experience: payload.experience, description: payload.description, photoUrl: payload.photoUrl, languages: payload.languages, serviceIds: payload.serviceIds, vehicle: payload.vehicle };
+      const body = mode === "driver" ? ownProfile : payload;
+      const response = await fetch(mode === "driver" ? "/api/driver/perfil" : id ? `/api/admin/conductores/${id}` : "/api/admin/conductores", { method: mode === "driver" || id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const result = await response.json();
-      if (response.status === 401) { setError("Tu sesión venció. Abre el acceso administrativo en otra pestaña y vuelve a guardar este formulario."); return; }
+      if (response.status === 401) { setError("Tu sesión venció. Abre tu página de acceso en otra pestaña y vuelve a guardar este formulario."); return; }
       if (!response.ok) { setError(result.error || "No se pudo guardar."); setErrors(result.fields || {}); return; }
-      router.push(`/admin/conductores/${result.id}/editar?guardado=1`); router.refresh();
+      router.push(mode === "driver" ? "/panel/perfil?guardado=1" : `/admin/conductores/${result.id}/editar?guardado=1`); router.refresh();
     } catch { setError("No pudimos conectar. Tus cambios siguen en el formulario; intenta guardar de nuevo."); }
     finally { setPending(false); }
   }
@@ -47,8 +49,8 @@ export function DriverForm({ id, initial, services }: { id?: string; initial?: D
     <section className="admin-card"><span className="eyebrow">02 / CONTACTO</span><h2>Canales públicos</h2><p className="form-help">Estos datos aparecerán en el perfil al publicarlo. Deja vacíos los canales que no quieras mostrar.</p><div className="form-grid">{field("phone", "Teléfono", initial?.phone, "tel", false, "Incluye el código de país: +507 6000 0000.", 32)}{field("whatsapp", "WhatsApp", initial?.whatsapp, "tel", false, "Incluye el código de país.", 32)}{field("email", "Correo electrónico", initial?.email, "email")}</div></section>
     <section className="admin-card"><span className="eyebrow">03 / SERVICIOS</span><h2>¿Qué ofrece el conductor?</h2><div className="checkbox-grid">{services.map((service) => <label className="checkbox-label" key={service.id}><input type="checkbox" name="serviceIds" value={service.id} defaultChecked={initial?.serviceIds.includes(service.id)} />{service.name}</label>)}</div>{!services.length && <p className="form-help">Todavía no hay servicios disponibles.</p>}</section>
     <section className="admin-card"><span className="eyebrow">04 / VEHÍCULO</span><h2>Vehículo principal</h2><label className="checkbox-label vehicle-toggle"><input type="checkbox" checked={vehicleEnabled} onChange={(event) => setVehicleEnabled(event.target.checked)} />Incluir un vehículo en el perfil</label>{vehicleEnabled && <div className="form-grid">{field("vehicle.brand", "Marca", initial?.vehicle?.brand, "text", true, undefined, 100)}{field("vehicle.model", "Modelo", initial?.vehicle?.model, "text", true, undefined, 100)}{field("vehicle.year", "Año", String(initial?.vehicle?.year || new Date().getFullYear()), "number", true)}{field("vehicle.color", "Color", initial?.vehicle?.color, "text", false, undefined, 64)}{field("vehicle.passengers", "Pasajeros", String(initial?.vehicle?.passengers || 4), "number", true)}{field("vehicle.plate", "Placa", initial?.vehicle?.plate, "text", false, "Sólo visible en administración.", 32)}{field("vehicle.photoUrl", "Enlace a la fotografía del vehículo", initial?.vehicle?.photoUrl, "url", false, "Opcional. Usa un enlace HTTPS.", 2048)}{field("vehicle.description", "Descripción del vehículo", initial?.vehicle?.description, "text", false, undefined, 1000)}</div>}</section>
-    <section className="admin-card"><span className="eyebrow">05 / PUBLICACIÓN</span><h2>Control del perfil</h2><div className="publication-controls"><label className="checkbox-label"><input type="checkbox" name="active" defaultChecked={initial?.active} />Publicar perfil</label><p className="form-help">Al guardar con esta opción activa, el perfil y sus datos de contacto serán visibles para cualquiera con el enlace. Desmárcala para retirarlo de publicación.</p><label className="checkbox-label"><input type="checkbox" name="verified" defaultChecked={initial?.verified} />Conductor verificado por administración</label><p className="form-help">Actívala únicamente después de verificar la información del conductor.</p></div></section>
+    {mode === "admin" && <section className="admin-card"><span className="eyebrow">05 / PUBLICACIÓN</span><h2>Control del perfil</h2><div className="publication-controls"><label className="checkbox-label"><input type="checkbox" name="active" defaultChecked={initial?.active} />Publicar perfil</label><p className="form-help">Al guardar con esta opción activa, el perfil y sus datos de contacto serán visibles para cualquiera con el enlace. Desmárcala para retirarlo de publicación.</p><label className="checkbox-label"><input type="checkbox" name="verified" defaultChecked={initial?.verified} />Conductor verificado por administración</label><p className="form-help">Actívala únicamente después de verificar la información del conductor.</p></div></section>}
     {error && <div className="form-error" role="alert">{error}{Object.keys(errors).length > 0 && <ul>{Object.entries(errors).map(([key, message]) => <li key={key}>{message}</li>)}</ul>}</div>}
-    <div className="form-footer"><Link href="/admin/conductores" className="button button-secondary">Volver a conductores</Link><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Guardando…" : id ? "Guardar cambios" : "Crear conductor"}</button></div>
+    <div className="form-footer"><Link href={mode === "driver" ? "/panel" : "/admin/conductores"} className="button button-secondary">Volver</Link><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Guardando…" : id ? "Guardar cambios" : "Crear conductor"}</button></div>
   </form>;
 }

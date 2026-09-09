@@ -11,13 +11,17 @@ Implementado con Next.js 16, React, TypeScript, Tailwind CSS, Prisma 7 y MySQL 8
 - Acceso administrativo con contraseña y sesiones revocables de ocho horas.
 - Resumen, búsqueda y listado de conductores con paginación.
 - Creación y edición de perfiles, canales de contacto, servicios y vehículo principal.
+- Cuentas de conductor con contraseña temporal, cambio obligatorio y panel privado.
+- Agenda mensual, solicitudes de traslado, viajes manuales, confirmación, edición y cancelación con protección contra cruces de horario.
+- Enlace privado para el pasajero y conexión con calendarios sin descarga manual.
+- Diseño unificado de perfiles, reservas y panel; contacto fijo en móvil y agenda de muestra en `/demo/agenda`.
 - Publicación y retiro de perfiles; la dirección permanece fija para conservar los enlaces NFC.
 - Perfiles públicos conectados a MySQL, descarga vCard, WhatsApp, teléfono, correo y compartir, según los datos configurados.
 - Docker Compose y pruebas automatizadas contra el contenedor de producción y una base MySQL desechable.
 
 El perfil de Daniel Ríos en `/` y `/conductor/demo` es ficticio e independiente de la base. Sus canales reales siguen deshabilitados. El PDF en [docs](docs/Documentacion_Provisional_Driver_Connect_v0.1.pdf) es referencia funcional de un prototipo anterior, no una descripción de funciones ya implementadas aquí.
 
-Pendientes: acceso y panel del conductor, carga de archivos (actualmente se aceptan enlaces HTTPS), gestión del catálogo de servicios desde el panel, despliegue en AWS y programación física de tarjetas NFC.
+Pendientes: carga de archivos y galerías (actualmente se aceptan enlaces HTTPS), gestión del catálogo de servicios desde el panel, avisos automáticos, sincronización de Google mediante OAuth, despliegue en AWS y programación física de tarjetas NFC. No se han importado los datos del respaldo de la otra versión.
 
 ## Arranque con Docker
 
@@ -40,6 +44,19 @@ Abrir [el acceso administrativo](http://127.0.0.1:3000/login-admin) usando exact
 Compose inicia MySQL, aplica las migraciones y luego inicia la aplicación. La base queda almacenada en el volumen `mysql_data`. `docker compose down` conserva ese volumen; la opción `-v` lo elimina y borra sus datos.
 
 MySQL no publica puertos en el host. La aplicación escucha en `127.0.0.1:3000`; para una máquina remota usa un túnel SSH o el proxy HTTPS descrito en [la guía de AWS](docs/docker-aws.md).
+
+## Conductores, reservas y calendarios
+
+En la edición administrativa de un conductor, abrir **Gestionar acceso del conductor**, elegir usuario y contraseña temporal y comunicarle el acceso. Al entrar en `/login-conductor`, deberá elegir su propia contraseña antes de usar el panel.
+
+El conductor puede editar su presentación, contacto, servicios y vehículo. La dirección NFC, publicación y verificación permanecen bajo control administrativo. En `/panel/agenda` recibe solicitudes y registra viajes; las confirmaciones concurrentes no pueden ocupar el mismo horario.
+
+Un perfil publicado con cuenta activa y servicios muestra **Solicitar un traslado**. El pasajero recibe un enlace privado para consultar su solicitud. Una solicitud permanece pendiente hasta que el conductor confirma; no implica precio ni disponibilidad aceptados. No se envían mensajes o correos automáticamente.
+
+- **Google Calendar (Android, iPhone o navegador):** abre un evento prellenado para revisar y guardar, sin archivo descargado. Es una copia; las modificaciones o cancelaciones se actualizan manualmente.
+- **Calendario de iPhone:** abre una suscripción privada, de un viaje para el pasajero o de toda la agenda para el conductor. Requiere una dirección HTTPS pública y confirmación del usuario. Las actualizaciones dependen de la sincronización de Calendario.
+
+El protocolo iCalendar se sirve desde la aplicación como una suscripción; no se genera un archivo para descargar ni se solicita importar uno. No se escribe silenciosamente en calendarios del teléfono. Los enlaces privados se pueden revocar. Consulta [agenda y calendarios](docs/agenda-calendarios.md) y [criterios de integración de las dos versiones](docs/integracion-versiones.md).
 
 ## Administradores
 
@@ -90,7 +107,7 @@ GitHub Actions construye las imágenes y ejecuta esas comprobaciones. Después i
 - `src/components/`: perfiles y formularios administrativos.
 - `src/lib/`: autenticación, autorización, validación y acceso a MySQL.
 - `scripts/create-admin.ts`: creación y recuperación de acceso por consola.
-- `tests/`: pruebas unitarias y de integración.
+- `tests/`: pruebas unitarias y de integración, incluidos permisos entre conductores, reservas concurrentes y calendarios privados.
 - `prisma/`: esquema y migraciones versionadas.
 - `Dockerfile` y `compose.yaml`: aplicación, migraciones, herramientas y MySQL.
 - `docs/`: referencia funcional, arquitectura y despliegue.

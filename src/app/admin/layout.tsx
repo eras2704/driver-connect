@@ -7,5 +7,5 @@ export const metadata: Metadata = { title: "Administración | Driver Connect", d
 export const dynamic = "force-dynamic";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
-  return <div className="admin-shell"><header className="admin-header"><Link href="/admin" className="footer-brand">Driver Connect<span>.</span></Link><nav aria-label="Administración"><Link href="/admin">Resumen</Link><Link href="/admin/conductores">Conductores</Link></nav><div className="admin-identity"><span>{admin.name}</span><LogoutButton /></div></header><main className="admin-main">{children}</main><footer className="admin-footer">Driver Connect · Administración</footer></div>;
+  return <div className="admin-shell"><header className="admin-header"><Link href="/admin" className="footer-brand">Driver Connect<span>.</span></Link><nav aria-label="Administración"><Link href="/admin">Resumen</Link><Link href="/admin/conductores">Conductores</Link><Link href="/admin/reservas">Reservas</Link></nav><div className="admin-identity"><span>{admin.name}</span><LogoutButton /></div></header><main className="admin-main">{children}</main><footer className="admin-footer">Driver Connect · Administración</footer></div>;
 }

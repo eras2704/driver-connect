@@ -1,4 +1,4 @@
-name: Validate Docker and administration
+name: Validate Docker, profiles and bookings
 
 on:
   push:
@@ -29,6 +29,9 @@ jobs:
         run: docker compose up --detach --build --wait --wait-timeout 180
       - name: Verify page and migrated schema
         run: |
+          curl --fail --silent --output /dev/null http://127.0.0.1:3000/api/health
+          curl --fail --silent --output /dev/null http://127.0.0.1:3000/demo/agenda
+          curl --fail --silent --output /dev/null http://127.0.0.1:3000/login-conductor
           curl --fail --silent --output /tmp/home.html http://127.0.0.1:3000
           grep -q 'Driver Connect' /tmp/home.html
           curl --fail --silent --output /tmp/profile.html http://127.0.0.1:3000/conductor/demo
@@ -40,7 +43,7 @@ jobs:
           docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT COUNT(*) FROM Driver; SELECT COUNT(*) FROM Vehicle; SELECT COUNT(*) FROM Service; SELECT COUNT(*) FROM AdminUser; SELECT COUNT(*) FROM DriverUser;"'
       - name: Create disposable administrator
         run: docker compose --profile tools run --rm -T admin-create
-      - name: Verify sessions, permissions and driver lifecycle against MySQL
+      - name: Verify administration, bookings and private calendars against MySQL
         run: docker compose --profile test run --rm -T test
       - name: Show logs on failure
         if: failure()
