@@ -2,7 +2,7 @@
 
 Esta guía prepara el despliegue; todavía no se ha creado una instancia ni se ha desplegado la aplicación en AWS.
 
-Para una máquina Ubuntu existente, sigue [el paso a paso con HTTPS y sin comprar dominio](aws-paso-a-paso.md). El repositorio incluye `compose.aws.yaml`, Caddy y scripts de preparación. Estos archivos no crean recursos ni cambian nada en AWS por sí solos.
+Para una máquina Ubuntu existente, sigue [el paso a paso para perfiles NFC con un subdominio de Hostinger y HTTPS](aws-paso-a-paso.md). El repositorio incluye `compose.aws.yaml`, Caddy y scripts de preparación. Estos archivos no crean recursos ni cambian nada en AWS por sí solos.
 
 ## Arquitectura de esta base
 
