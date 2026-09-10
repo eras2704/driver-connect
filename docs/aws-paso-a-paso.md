@@ -2,9 +2,9 @@
 
 Esta guía es para una instancia Ubuntu existente dedicada a Driver Connect. Los pasos los ejecutas tú; preparar el paquete no publica la aplicación. Si esa máquina ya sirve otras webs en los puertos 80 o 443, hay que integrar el proxy existente antes de seguir.
 
-El resultado será: **tarjeta NFC → perfil del conductor → contacto o solicitud de viaje**. Tu web actual permanece en Hostinger; Driver Connect funciona en AWS bajo el subdominio `driverconnect`. Cada tarjeta guarda la dirección de un conductor, no la portada de muestra.
+El resultado será: **tarjeta NFC → perfil del conductor → contacto o solicitud de viaje**. Tu web actual permanece en Hostinger; Driver Connect funciona en AWS bajo el subdominio `nfc`. Cada tarjeta guarda la dirección de un conductor, no la portada de muestra.
 
-El subdominio confirmado es **driverconnect.comunidaddeconductorespanama.com**. La IP proporcionada es **35.169.111.143**, del recurso **StaticIp-1** en Lightsail, región **us-east-1**. La clave está en `/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem`. Los comandos ya incluyen estos datos; el contenido de la clave nunca se copia al proyecto ni al servidor.
+El subdominio para los perfiles es **nfc.comunidaddeconductorespanama.com**. **Conserva `driverconnect.comunidaddeconductorespanama.com` y su ALIAS: ya lo utiliza una API existente.** La IP proporcionada es **35.169.111.143**, del recurso **StaticIp-1** en Lightsail, región **us-east-1**. La clave está en `/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem`. Los comandos ya incluyen estos datos; el contenido de la clave nunca se copia al proyecto ni al servidor.
 
 ## 1. Comprobar la instancia y su dirección pública
 
@@ -28,31 +28,31 @@ Para SSH puedes marcar **Restringir a dirección IP** e introducir la IP públic
 
 ## 3. Crear el subdominio NFC en Hostinger
 
-Tu web sigue en `comunidaddeconductorespanama.com` y Driver Connect estará en `driverconnect.comunidaddeconductorespanama.com`.
+Tu web sigue en `comunidaddeconductorespanama.com`; la API existente conserva `driverconnect.comunidaddeconductorespanama.com`. Los perfiles de este proyecto usarán **nfc.comunidaddeconductorespanama.com**.
 
-En Hostinger, abre **Dominios → tu dominio → DNS / Nameservers → Registros DNS**. Si los servidores DNS pertenecen a otro proveedor, haz el cambio allí. Añade este registro para un nombre que todavía no esté en uso:
+El error `IN ALIAS must not be used with A on the same name` significa que Hostinger rechaza añadir un registro A donde ya existe un ALIAS. La indicación anterior de sustituir los destinos de `driverconnect` queda retirada: **no borres ni cambies su ALIAS, CNAME, A o AAAA**, porque sirven a la API existente.
+
+En Hostinger, abre **Dominios → comunidaddeconductorespanama.com → DNS / Nameservers → Registros DNS**. Si los servidores DNS pertenecen a otro proveedor, haz el cambio allí. Añade este registro para el nombre nuevo:
 
 | Campo | Valor |
 | --- | --- |
 | Tipo | A |
-| Nombre | driverconnect |
+| Nombre | nfc |
 | Apunta a | 35.169.111.143 |
 | TTL | Dejar el predeterminado |
 
-No cambies los registros `@`, `www`, correo ni los nameservers: la web y el correo actuales los siguen necesitando. Para un servicio en AWS basta el registro DNS; no necesitas crear otra web ni contratar otro hosting en Hostinger.
+Escribe únicamente **nfc** en Nombre. Conserva los registros de `driverconnect`, `@`, `www`, correo y los nameservers. Basta el registro DNS para conectar el subdominio al servidor externo; no necesitas crear un sitio adicional en el constructor de Hostinger.
 
-Si `driverconnect` ya tiene un registro A, AAAA o CNAME, comprueba qué servicio utiliza antes de sustituirlo o añadir registros que entren en conflicto. El nuevo nombre debe apuntar únicamente al servidor que acabas de preparar. El DNS puede tardar en actualizarse; Hostinger indica que la propagación puede requerir hasta 24 horas.
-
-En la comprobación previa, este subdominio resolvía a `145.223.124.215` y `88.223.87.195`, además de dos direcciones IPv6; ninguna era la IP de Lightsail indicada. Para esta configuración con IPv4, deja el registro A de **driverconnect** en **35.169.111.143** y retira únicamente los destinos antiguos de ese mismo subdominio, incluidos sus registros AAAA si aparecen. Si hPanel muestra un CNAME o ALIAS que genera esas direcciones, sustitúyelo por el registro A indicado. Conserva intactos los registros de la web principal y el correo.
+La consulta DNS previa no devolvió registros A, AAAA ni CNAME para `nfc`. Comprueba también que ese nombre esté libre en hPanel antes de añadirlo: una respuesta DNS vacía no garantiza que no exista alguna configuración pendiente. Si aparece otro conflicto, no elimines registros de un servicio existente para resolverlo.
 
 Comprueba el resultado desde tu computadora:
 
 ```bash
-dig +short driverconnect.comunidaddeconductorespanama.com A
-dig +short driverconnect.comunidaddeconductorespanama.com AAAA
+dig +short nfc.comunidaddeconductorespanama.com A
+dig +short nfc.comunidaddeconductorespanama.com AAAA
 ```
 
-La primera consulta debe devolver **35.169.111.143** y la segunda quedar vacía para este despliegue sin IPv6. Si aún aparecen las direcciones anteriores, revisa el cambio en Hostinger o espera a que expire la caché DNS antes de comprobar el certificado HTTPS.
+La primera consulta debe devolver **35.169.111.143** y la segunda quedar vacía para este despliegue sin IPv6. Hostinger indica que la propagación puede requerir hasta 24 horas. Espera a que el nombre resuelva correctamente antes de comprobar el certificado HTTPS.
 
 ## 4. Subir el paquete y entrar en Ubuntu
 
@@ -84,10 +84,24 @@ El instalador admite Ubuntu 22.04, 24.04 y 26.04, y utiliza el repositorio ofici
 Con tu subdominio de Hostinger:
 
 ```bash
-bash scripts/configure-aws.sh driverconnect.comunidaddeconductorespanama.com
+bash scripts/configure-aws.sh nfc.comunidaddeconductorespanama.com
 ```
 
-El comando ya contiene tu subdominio. El script genera tres claves distintas y las guarda en `.env.production`, con permisos restringidos. Si el archivo ya existe, lo conserva y se detiene: no borres ese archivo para repetir el proceso. Si la base ya tiene datos, hay que utilizar sus credenciales existentes.
+El comando ya contiene el nuevo subdominio. El script genera tres claves distintas y las guarda en `.env.production`, con permisos restringidos. Si el archivo ya existe, lo conserva y se detiene: no borres ese archivo para repetir el proceso. Si la base ya tiene datos, hay que utilizar sus credenciales existentes.
+
+**Si ya configuraste el proyecto con la dirección anterior**, abre este archivo desde la carpeta `~/driver-connect` de la máquina Ubuntu:
+
+```bash
+nano .env.production
+```
+
+Cambia únicamente la línea `APP_ORIGIN` para que quede así:
+
+```dotenv
+APP_ORIGIN=https://nfc.comunidaddeconductorespanama.com
+```
+
+Guarda con **Ctrl+O**, **Enter** y sal con **Ctrl+X**. Conserva las otras claves. Al ejecutar el siguiente paso, Compose recreará la aplicación y Caddy con la nueva dirección. Estos ajustes corresponden al proyecto Driver Connect que estás instalando; no modifiques los archivos de la API existente.
 
 ## 6. Iniciar la aplicación y HTTPS
 
@@ -103,7 +117,7 @@ Comprueba el estado:
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml ps
 ```
 
-Abre `https://driverconnect.comunidaddeconductorespanama.com`. Verás el perfil de muestra: esto permite comprobar que el sitio abre. Esta portada no es el enlace que grabarás en las tarjetas. Si todavía no abre, consulta:
+Abre `https://nfc.comunidaddeconductorespanama.com`. Verás el perfil de muestra: esto permite comprobar que el sitio abre. Esta portada no es el enlace que grabarás en las tarjetas. Si todavía no abre, consulta:
 
 ```bash
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml logs --tail=60 caddy app migrate
@@ -119,16 +133,16 @@ Desde la misma carpeta:
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml --profile tools run --rm admin-create
 ```
 
-Escribe el usuario, tu nombre y una contraseña de al menos 12 caracteres cuando el programa los solicite. No existe una contraseña predeterminada. Entra en `https://driverconnect.comunidaddeconductorespanama.com/login-admin`.
+Escribe el usuario, tu nombre y una contraseña de al menos 12 caracteres cuando el programa los solicite. No existe una contraseña predeterminada. Entra en `https://nfc.comunidaddeconductorespanama.com/login-admin`.
 
 1. En **Conductores → Nuevo conductor**, completa los datos del conductor.
 2. Elige su **Dirección del perfil**, por ejemplo `daniel-rios`. Esta parte de la dirección queda fija después de crear el perfil.
 3. Asigna los servicios, completa el vehículo y guarda.
 4. Desde su ficha, abre **Gestionar acceso del conductor** y crea su usuario con contraseña temporal. Necesita una cuenta activa y servicios asignados para recibir solicitudes.
 5. Activa **Publicar perfil** cuando los datos estén listos.
-6. Abre **Ver perfil** y copia la dirección completa. Por ejemplo: `https://driverconnect.comunidaddeconductorespanama.com/conductor/daniel-rios`.
+6. Abre **Ver perfil** y copia la dirección completa. Por ejemplo: `https://nfc.comunidaddeconductorespanama.com/conductor/daniel-rios`.
 
-El conductor entra en `https://driverconnect.comunidaddeconductorespanama.com/login-conductor` y cambia su contraseña temporal. Su panel permite gestionar el perfil y las reservas.
+El conductor entra en `https://nfc.comunidaddeconductorespanama.com/login-conductor` y cambia su contraseña temporal. Su panel permite gestionar el perfil y las reservas.
 
 ## 8. Grabar y comprobar cada tarjeta NFC
 
