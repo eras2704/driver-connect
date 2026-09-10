@@ -3,15 +3,18 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
+import time
 
 CONFIG = Path("/opt/ccpd/server/Caddyfile")
 SNIPPET = Path(__file__).resolve().parent.parent / "deploy/nfc.Caddyfile"
 PROXY = "server-caddy-1"
 APP = "driver-connect-app-1"
 DOMAIN = "nfc.comunidaddeconductorespanama.com"
+CONTAINER_CONFIG = "/etc/caddy/Caddyfile"
 
 
 def run(*args, input=None):
@@ -20,6 +23,59 @@ def run(*args, input=None):
 
 def inspect(name):
     return json.loads(run("docker", "inspect", name).stdout)[0]
+
+
+def reload_method(config):
+    if not config.get("admin", {}).get("disabled", False):
+        return "api"
+    # SIGUSR1 is supported by the installed 2.11.x release. Never send it to
+    # an unknown PID 1, an older binary, or a process started with --resume.
+    version = run("docker", "exec", PROXY, "caddy", "version").stdout
+    match = re.match(r"v(\d+)\.(\d+)\.(\d+)(?:\s|$)", version)
+    if not match or int(match[1]) != 2 or int(match[2]) < 11:
+        raise RuntimeError("Caddy tiene admin off; se requiere Caddy 2.11 o posterior para esta recarga por señal. No se modificó el archivo.")
+    command = run("docker", "exec", PROXY, "cat", "/proc/1/cmdline").stdout.rstrip("\0").split("\0")
+    if not command or Path(command[0]).name != "caddy" or command[1:] != ["run", "--config", CONTAINER_CONFIG, "--adapter", "caddyfile"]:
+        raise RuntimeError("Caddy tiene admin off, pero su proceso no permite verificar una recarga por señal. No se modificó el archivo.")
+    # Confirm that Docker can read logs before changing the bind-mounted file.
+    run("docker", "logs", "--tail", "1", PROXY)
+    return "signal"
+
+
+def signal_result(output, since):
+    for line in output.splitlines():
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(entry, dict) or entry.get("signal") != "SIGUSR1":
+            continue
+        timestamp = entry.get("ts")
+        if not isinstance(timestamp, (int, float)) or timestamp < since:
+            continue
+        message = entry.get("msg", "")
+        if message == "successfully reloaded config from file" and entry.get("file") == CONTAINER_CONFIG:
+            return True
+        if message == "failed to reload config from file" or "ignored SIGUSR1" in message:
+            raise RuntimeError("Caddy rechazó o ignoró la recarga por SIGUSR1.")
+    return False
+
+
+def reload_config(method):
+    if method == "api":
+        run("docker", "exec", PROXY, "caddy", "reload", "--config", CONTAINER_CONFIG, "--adapter", "caddyfile")
+        return
+    since = time.time()
+    run("docker", "kill", "--signal=USR1", PROXY)
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        logs = run("docker", "logs", "--since", f"{since:.9f}", "--tail", "1000", PROXY)
+        if signal_result(logs.stdout + "\n" + logs.stderr, since):
+            if not inspect(PROXY)["State"].get("Running"):
+                raise RuntimeError("Caddy dejó de estar en ejecución después de la recarga.")
+            return
+        time.sleep(0.5)
+    raise RuntimeError("Caddy no confirmó la recarga por SIGUSR1 en 30 segundos.")
 
 
 def main():
@@ -50,9 +106,12 @@ def main():
     else:
         candidate = current.rstrip() + "\n\n" + snippet + "\n"
     # Captura la salida para no mostrar otras rutas ni posibles valores privados.
-    run("docker", "exec", "-i", PROXY, "caddy", "adapt", "--config", "-", "--adapter", "caddyfile", "--validate", input=candidate)
+    adapted = run("docker", "exec", "-i", PROXY, "caddy", "adapt", "--config", "-", "--adapter", "caddyfile", "--validate", input=candidate)
+    method = reload_method(json.loads(adapted.stdout))
+    if method == "signal":
+        print("Caddy usa admin off. Se recargará mediante SIGUSR1 y se comprobará su confirmación.")
     if candidate == current:
-        run("docker", "exec", PROXY, "caddy", "reload", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile")
+        reload_config(method)
         print(f"Proxy recargado. Comprueba https://{DOMAIN}")
         return
     if CONFIG.read_bytes() != original:
@@ -63,12 +122,12 @@ def main():
     try:
         # Mantiene el inodo del archivo enlazado al contenedor mediante bind mount.
         CONFIG.write_bytes(candidate.encode("utf-8"))
-        run("docker", "exec", PROXY, "caddy", "reload", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile")
-    except (OSError, subprocess.SubprocessError) as exc:
+        reload_config(method)
+    except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         CONFIG.write_bytes(original)
         try:
-            run("docker", "exec", PROXY, "caddy", "reload", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile")
-        except subprocess.SubprocessError:
+            reload_config(method)
+        except (RuntimeError, subprocess.SubprocessError):
             raise RuntimeError(f"Archivo restaurado, pero no se pudo recargar. Respaldo: {backup}") from exc
         raise RuntimeError(f"No se aplicó el cambio; configuración anterior restaurada. Respaldo: {backup}") from exc
     print(f"Sitio NFC añadido y proxy recargado. Respaldo: {backup}")
