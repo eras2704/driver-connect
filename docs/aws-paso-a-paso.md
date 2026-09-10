@@ -1,36 +1,30 @@
-# Perfiles NFC: Hostinger + AWS con Ubuntu
+# Perfiles NFC: Hostinger + AWS Lightsail con Ubuntu
 
 Esta guía es para una instancia Ubuntu existente dedicada a Driver Connect. Los pasos los ejecutas tú; preparar el paquete no publica la aplicación. Si esa máquina ya sirve otras webs en los puertos 80 o 443, hay que integrar el proxy existente antes de seguir.
 
 El resultado será: **tarjeta NFC → perfil del conductor → contacto o solicitud de viaje**. Tu web actual permanece en Hostinger; Driver Connect funciona en AWS bajo el subdominio `driverconnect`. Cada tarjeta guarda la dirección de un conductor, no la portada de muestra.
 
-El subdominio confirmado es **driverconnect.comunidaddeconductorespanama.com**. En los comandos, sustituye únicamente `TU_IP` por la **IPv4 pública** de tu instancia y `TU_CLAVE.pem` por el nombre de tu clave de acceso. No uses la IPv4 privada ni copies literalmente esos dos marcadores.
+El subdominio confirmado es **driverconnect.comunidaddeconductorespanama.com**. La IP proporcionada es **35.169.111.143**, del recurso **StaticIp-1** en Lightsail, región **us-east-1**. La clave está en `/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem`. Los comandos ya incluyen estos datos; el contenido de la clave nunca se copia al proyecto ni al servidor.
 
 ## 1. Comprobar la instancia y su dirección pública
 
-En **AWS → EC2 → Instancias**, selecciona tu máquina Ubuntu y comprueba que esté **En ejecución** y que pasen las comprobaciones de estado. Anota su IPv4 pública y localiza la clave `.pem` que utilizas para conectarte. Si no tienes la clave, revisa **Conectar** en la consola para establecer otro método de acceso antes de seguir con los comandos SSH de esta guía.
+Abre **AWS Lightsail → Instancias** en la región **us-east-1**. Selecciona tu máquina Ubuntu y comprueba que esté **En ejecución**.
 
-Para conservar la misma IP al detener e iniciar la instancia, comprueba si ya tiene una **Elastic IP** asociada. Si ya la tiene, reutilízala. Si todavía no y esta máquina está dedicada a Driver Connect:
+En **Redes / Networking**, comprueba que **StaticIp-1**, con dirección **35.169.111.143**, esté asociada a esa instancia. Si aparece sin instancia asociada, utiliza la opción de adjuntarla a tu Ubuntu. Si aparece asociada a otra instancia, revisa cuál es la destinada al proyecto antes de cambiarla.
 
-1. En la misma región de la instancia, abre **EC2 → Red y seguridad → Direcciones IP elásticas**.
-2. Elige **Asignar dirección IP elástica** y confirma la asignación.
-3. Selecciona la nueva dirección y abre **Acciones → Asociar dirección IP elástica**.
-4. Selecciona tu instancia Ubuntu y asóciala.
-5. Anota esa dirección como `TU_IP` para los pasos siguientes.
-
-AWS cobra por las IPv4 públicas, incluidas las Elastic IP. Asociar una nueva dirección sustituye la IPv4 pública anterior: si la máquina sirve otros sistemas, revisa sus dependencias antes de cambiarla. El nombre del subdominio será la dirección permanente de las tarjetas; si en el futuro cambia el servidor, podrás actualizar su registro DNS sin reescribir las tarjetas.
+Ya tienes una IP estática de Lightsail: conserva ese recurso. El nombre del subdominio será la dirección permanente de las tarjetas; si en el futuro cambia el servidor, podrás actualizar su registro DNS sin reescribir las tarjetas.
 
 ## 2. Permitir el acceso web en AWS
 
-En la ficha de la instancia, abre **Seguridad → Grupo de seguridad → Editar reglas de entrada** y añade las reglas que falten:
+En la ficha de la instancia de Lightsail, abre **Redes / Networking → Firewall IPv4 → Añadir regla** y configura las reglas que falten:
 
 | Tipo | Puerto | Origen |
 | --- | --- | --- |
-| HTTP | 80 TCP | 0.0.0.0/0 |
-| HTTPS | 443 TCP | 0.0.0.0/0 |
-| SSH | 22 TCP | Mi IP |
+| HTTP | 80 TCP | Todas las direcciones IPv4 |
+| HTTPS | 443 TCP | Todas las direcciones IPv4 |
+| SSH | 22 TCP | Tu IP pública actual de conexión a Internet |
 
-El acceso SSH descrito aquí es desde tu equipo con tu archivo `.pem`. Mantén 3000 y 3306 cerrados a Internet. Las reglas afectan a todas las instancias que compartan ese grupo: usa el grupo destinado a esta máquina. Si hay un firewall de Ubuntu activo, también debe permitir 80/443 y tu acceso SSH. La instancia necesita salida a Internet para instalar paquetes y obtener certificados.
+Para SSH puedes marcar **Restringir a dirección IP** e introducir la IP pública actual de tu computadora; no es `35.169.111.143`, que pertenece al servidor. Si quieres conservar también el acceso desde la consola, habilita **Permitir SSH de navegador de Lightsail**. Mantén 3000 y 3306 cerrados a Internet. Si hay un firewall de Ubuntu activo, también debe permitir 80/443 y tu acceso SSH. La instancia necesita salida a Internet para instalar paquetes y obtener certificados.
 
 ## 3. Crear el subdominio NFC en Hostinger
 
@@ -42,25 +36,37 @@ En Hostinger, abre **Dominios → tu dominio → DNS / Nameservers → Registros
 | --- | --- |
 | Tipo | A |
 | Nombre | driverconnect |
-| Apunta a | TU_IP |
+| Apunta a | 35.169.111.143 |
 | TTL | Dejar el predeterminado |
 
 No cambies los registros `@`, `www`, correo ni los nameservers: la web y el correo actuales los siguen necesitando. Para un servicio en AWS basta el registro DNS; no necesitas crear otra web ni contratar otro hosting en Hostinger.
 
 Si `driverconnect` ya tiene un registro A, AAAA o CNAME, comprueba qué servicio utiliza antes de sustituirlo o añadir registros que entren en conflicto. El nuevo nombre debe apuntar únicamente al servidor que acabas de preparar. El DNS puede tardar en actualizarse; Hostinger indica que la propagación puede requerir hasta 24 horas.
 
-## 4. Subir el paquete y entrar en Ubuntu
+En la comprobación previa, este subdominio resolvía a `145.223.124.215` y `88.223.87.195`, además de dos direcciones IPv6; ninguna era la IP de Lightsail indicada. Para esta configuración con IPv4, deja el registro A de **driverconnect** en **35.169.111.143** y retira únicamente los destinos antiguos de ese mismo subdominio, incluidos sus registros AAAA si aparecen. Si hPanel muestra un CNAME o ALIAS que genera esas direcciones, sustitúyelo por el registro A indicado. Conserva intactos los registros de la web principal y el correo.
 
-Guarda `driver-connect-aws.tar.gz` en Descargas, junto a tu clave `.pem` o ajusta su ruta. Ejecuta estos comandos **en la terminal de tu computadora**, no en AWS:
+Comprueba el resultado desde tu computadora:
 
 ```bash
-cd ~/Descargas
-chmod 600 TU_CLAVE.pem
-scp -i TU_CLAVE.pem driver-connect-aws.tar.gz ubuntu@TU_IP:~/driver-connect-aws.tar.gz
-ssh -i TU_CLAVE.pem ubuntu@TU_IP
+dig +short driverconnect.comunidaddeconductorespanama.com A
+dig +short driverconnect.comunidaddeconductorespanama.com AAAA
+```
+
+La primera consulta debe devolver **35.169.111.143** y la segunda quedar vacía para este despliegue sin IPv6. Si aún aparecen las direcciones anteriores, revisa el cambio en Hostinger o espera a que expire la caché DNS antes de comprobar el certificado HTTPS.
+
+## 4. Subir el paquete y entrar en Ubuntu
+
+El paquete ya está en la carpeta local del proyecto. Ejecuta estos comandos **en la terminal de tu computadora**, no en la consola SSH del navegador de AWS. El primer comando restringe los permisos de la clave para que SSH la acepte:
+
+```bash
+chmod 600 "/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem"
+scp -i "/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem" "/home/eroca/Documentos/ChatGPT/Tarjetas NFC/dist/driver-connect-aws.tar.gz" ubuntu@35.169.111.143:~/driver-connect-aws.tar.gz
+ssh -i "/home/eroca/Documentos/LightsailDefaultKey-us-east-1.pem" ubuntu@35.169.111.143
 ```
 
 En la primera conexión SSH, compara la huella del servidor con la información de la instancia antes de aceptarla. Conserva la clave privada en tu equipo. El paquete contiene el código del proyecto; no incluye `.env`, claves ni respaldos y no necesita iniciar sesión en GitHub desde la máquina.
+
+Si aparece `Permission denied (publickey)`, revisa en **Lightsail → tu instancia → Conectar** que utilice la clave predeterminada de **us-east-1** y la imagen **Ubuntu**. El archivo se localizó por su nombre; todavía no se ha comprobado que autentique contra esa instancia. Una imagen de aplicación Bitnami utiliza otro usuario y puede tener un servidor web ya instalado; en ese caso hay que adaptar estos pasos antes de instalar.
 
 Desde este punto ejecuta los comandos **dentro de la terminal de Ubuntu en AWS**:
 
@@ -169,8 +175,9 @@ Si falla cualquier comando, resuelve ese error antes de continuar. Para cambiar 
 
 - [Hostinger: apuntar un subdominio a un servidor externo](https://www.hostinger.com/support/8907694-how-to-create-a-subdomain-without-a-hosting-plan-at-hostinger/).
 - [Docker: instalación en Ubuntu](https://docs.docker.com/engine/install/ubuntu/).
-- [AWS: acceso SSH](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-to-linux-instance.html).
-- [AWS: Elastic IP y cargos de IPv4](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html).
+- [Lightsail: conexión SSH y usuarios según la imagen](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-ssh-using-terminal.html).
+- [Lightsail: asociar una IP estática](https://docs.aws.amazon.com/lightsail/latest/userguide/lightsail-create-static-ip.html).
+- [Lightsail: configurar el firewall](https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-editing-firewall-rules.html).
 - [Caddy: HTTPS automático](https://caddyserver.com/docs/automatic-https).
 - [NFC Tools: escribir enlaces en tarjetas NFC](https://www.wakdev.com/en/apps/nfc-tools-android.html).
 - [Google: impedir la indexación con noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing).
