@@ -1,0 +1,16 @@
+# Para Lightsail con server-caddy-1 y la red server_frontend existentes.
+# Usar con compose.yaml; no combinar con compose.aws.yaml.
+services:
+  app:
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN:?Configura primero .env.production}
+    networks:
+      default: {}
+      shared_proxy:
+        aliases:
+          - driver-connect-web
+
+networks:
+  shared_proxy:
+    external: true
+    name: server_frontend

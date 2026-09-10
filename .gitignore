@@ -5,6 +5,7 @@ out/
 dist/
 coverage/
 *.tsbuildinfo
+__pycache__/
 next-env.d.ts
 src/generated/prisma/
 .pnpm-store/

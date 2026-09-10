@@ -1,6 +1,6 @@
 # Perfiles NFC: Hostinger + AWS Lightsail con Ubuntu
 
-Esta guía es para una instancia Ubuntu existente dedicada a Driver Connect. Los pasos los ejecutas tú; preparar el paquete no publica la aplicación. Si esa máquina ya sirve otras webs en los puertos 80 o 443, hay que integrar el proxy existente antes de seguir.
+Esta máquina Ubuntu de Lightsail ya aloja una API. Su contenedor `server-caddy-1` ocupa los puertos 80 y 443. Esta guía utiliza ese mismo proxy mediante `compose.shared-proxy.yaml`; no arranques el segundo Caddy de `compose.aws.yaml` en esta máquina. Si acabas de recibir el error «port is already allocated», sigue [la corrección breve](resolver-puerto-80.md).
 
 El resultado será: **tarjeta NFC → perfil del conductor → contacto o solicitud de viaje**. Tu web actual permanece en Hostinger; Driver Connect funciona en AWS bajo el subdominio `nfc`. Cada tarjeta guarda la dirección de un conductor, no la portada de muestra.
 
@@ -74,10 +74,9 @@ Desde este punto ejecuta los comandos **dentro de la terminal de Ubuntu en AWS**
 mkdir -p ~/driver-connect
 cd ~/driver-connect
 tar -xzf ~/driver-connect-aws.tar.gz
-sudo bash scripts/install-docker-ubuntu.sh
 ```
 
-El instalador admite Ubuntu 22.04, 24.04 y 26.04, y utiliza el repositorio oficial de Docker. Si ya hay Docker y Compose, conserva esa instalación. No ejecuta borrados de datos.
+Docker y Compose ya están instalados en esta máquina. Conserva esa instalación y los contenedores de la API.
 
 ## 5. Configurar la dirección y las claves
 
@@ -101,36 +100,39 @@ Cambia únicamente la línea `APP_ORIGIN` para que quede así:
 APP_ORIGIN=https://nfc.comunidaddeconductorespanama.com
 ```
 
-Guarda con **Ctrl+O**, **Enter** y sal con **Ctrl+X**. Conserva las otras claves. Al ejecutar el siguiente paso, Compose recreará la aplicación y Caddy con la nueva dirección. Estos ajustes corresponden al proyecto Driver Connect que estás instalando; no modifiques los archivos de la API existente.
+Guarda con **Ctrl+O**, **Enter** y sal con **Ctrl+X**. Conserva las otras claves. Al ejecutar el siguiente paso, Compose recreará la aplicación con la nueva dirección. El proxy existente se configura mediante el script específico. Estos ajustes corresponden al proyecto Driver Connect que estás instalando; no modifiques los archivos de la API existente.
 
-## 6. Iniciar la aplicación y HTTPS
+## 6. Iniciar Driver Connect con el proxy existente
 
-```bash
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml up -d --build --wait --wait-timeout 300
-```
-
-La primera ejecución puede tardar varios minutos. Compila la aplicación, inicia MySQL, aplica las migraciones y arranca Caddy para obtener y renovar HTTPS. El DNS debe apuntar a esta IP y los puertos 80/443 deben ser accesibles. El comando espera que la aplicación esté sana; la emisión del certificado puede finalizar después.
-
-Comprueba el estado:
+La red Docker `server_frontend` ya conecta el Caddy existente con la API. Este archivo conecta también la aplicación de Driver Connect, con el nombre único `driver-connect-web`; MySQL permanece en la red interna del proyecto.
 
 ```bash
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml ps
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml up -d --build --wait --wait-timeout 300
+sudo python3 scripts/add-caddy-site.py
 ```
 
-Abre `https://nfc.comunidaddeconductorespanama.com`. Verás el perfil de muestra: esto permite comprobar que el sitio abre. Esta portada no es el enlace que grabarás en las tarjetas. Si todavía no abre, consulta:
+Si la aplicación ya está construida y solo estás resolviendo el conflicto de puertos, utiliza `--no-build` en lugar de `--build`, como indica [la corrección breve](resolver-puerto-80.md).
+
+El script comprueba la aplicación y el acceso desde el proxy, conserva el contenido de `/opt/ccpd/server/Caddyfile`, valida la configuración completa y crea una copia de respaldo privada antes de añadir el bloque NFC. Después recarga `server-caddy-1` mediante Caddy. Si la recarga falla, intenta restaurar y recargar la configuración anterior; informa si esa recuperación también falla. No borra ni detiene los contenedores de la API y no añade bloques duplicados al repetirlo.
+
+El DNS debe apuntar a la IP de Lightsail. Caddy obtiene y renueva el certificado del nuevo nombre cuando puede validarlo; la emisión puede tardar después de la recarga. Abre `https://nfc.comunidaddeconductorespanama.com` y comprueba también que tu API siga funcionando. La portada muestra el perfil de muestra; cada tarjeta llevará la dirección de su propio conductor.
+
+Si todavía no abre:
 
 ```bash
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml logs --tail=60 caddy app migrate
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml ps
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml logs --tail=60 app migrate
+sudo docker logs --tail=60 server-caddy-1
 ```
 
-Si aparece un error de DNS, revisa el registro A y espera su propagación. Un error de conexión o de validación del certificado suele requerir revisar IP, puertos y firewall. No ignores advertencias del navegador sobre certificados. Si falla la compilación por falta de memoria, la máquina necesita más recursos o una imagen compilada fuera de ella; no continúes con un despliegue incompleto.
+Si aparece un error DNS o de certificado, comprueba el registro A y los puertos 80/443. Si falla la compilación por memoria, revisa los recursos o construye la imagen fuera de la máquina. No reinicies ni detengas el proxy de la API para liberar los puertos.
 
 ## 7. Crear el administrador y los conductores
 
 Desde la misma carpeta:
 
 ```bash
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml --profile tools run --rm admin-create
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml --profile tools run --rm admin-create
 ```
 
 Escribe el usuario, tu nombre y una contraseña de al menos 12 caracteres cuando el programa los solicite. No existe una contraseña predeterminada. Entra en `https://nfc.comunidaddeconductorespanama.com/login-admin`.
@@ -178,9 +180,9 @@ El acceso NFC abre un enlace web: también puede abrirlo quien lo copie o reciba
 Para actualizar, conserva `.env.production`, los volúmenes y los respaldos; copia la nueva versión del código sobre la misma carpeta. Después de respaldar la base:
 
 ```bash
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml build
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml run --rm migrate
-sudo docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml up -d --wait --wait-timeout 300
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml build
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml run --rm migrate
+sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml up -d --wait --wait-timeout 300
 ```
 
 Si falla cualquier comando, resuelve ese error antes de continuar. Para cambiar de dirección, actualiza solo `APP_ORIGIN` en `.env.production` y vuelve a levantar los servicios después de configurar el DNS. Conserva las demás claves. Los enlaces NFC, privados y suscripciones que ya repartiste con la dirección anterior necesitan mantenerla operativa o renovarse.

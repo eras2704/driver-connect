@@ -25,6 +25,10 @@ jobs:
           PY
       - name: Validate Compose configuration
         run: docker compose config --quiet
+      - name: Verify shared proxy configuration and rollback
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/infrastructure -p 'test_*.py'
+          docker compose -f compose.yaml -f compose.shared-proxy.yaml config --quiet
       - name: Validate AWS HTTPS configuration
         run: |
           bash -n scripts/install-docker-ubuntu.sh scripts/configure-aws.sh

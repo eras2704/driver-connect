@@ -1,0 +1,6 @@
+# BEGIN Driver Connect NFC
+nfc.comunidaddeconductorespanama.com {
+	encode zstd gzip
+	reverse_proxy driver-connect-web:3000
+}
+# END Driver Connect NFC
