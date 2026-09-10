@@ -25,6 +25,12 @@ jobs:
           PY
       - name: Validate Compose configuration
         run: docker compose config --quiet
+      - name: Validate AWS HTTPS configuration
+        run: |
+          bash -n scripts/install-docker-ubuntu.sh scripts/configure-aws.sh
+          bash scripts/configure-aws.sh driver-connect.example.com
+          docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml config --quiet
+          docker compose --env-file .env.production -f compose.yaml -f compose.aws.yaml run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
       - name: Build and start application with MySQL
         run: docker compose up --detach --build --wait --wait-timeout 180
       - name: Verify page and migrated schema
