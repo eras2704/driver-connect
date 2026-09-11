@@ -3,6 +3,7 @@ import { db } from "./db";
 import { requireAdmin, requireApiAdmin } from "./admin-session";
 import { HttpError } from "./http";
 import type { DriverInput } from "./validation";
+import { addVehiclePhoto, withVehiclePhoto } from "./profile-photo";
 
 export async function listDrivers(query = "", page = 1) {
   await requireAdmin();
@@ -18,16 +19,17 @@ export async function listDrivers(query = "", page = 1) {
 export async function editorData(id?: string) {
   await requireAdmin();
   const [driver, services] = await Promise.all([
-    id ? db().driver.findUnique({ where: { id }, include: { vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1 }, services: { select: { id: true } } } }) : null,
+    id ? db().driver.findUnique({ where: { id }, include: { photos: { where: { category: "VEHICLE" }, orderBy: [{ position: "asc" }, { id: "asc" }], take: 1, select: { id: true } }, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1 }, services: { select: { id: true } } } }) : null,
     db().service.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
   return { driver, services };
 }
 
-export async function saveDriver(input: DriverInput, id?: string) {
+export async function saveDriver(input: DriverInput, id?: string, file: File | null = null) {
   await requireApiAdmin();
   try {
-    return await db().$transaction(async (tx) => {
+    return await withVehiclePhoto(file, input.vehicle, photo => db().$transaction(async (tx) => {
+      if (id) await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${id} FOR UPDATE`;
       const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
       if (id && !existing) throw new HttpError(404, "No se encontró el conductor.");
       if (existing && existing.slug !== input.slug) throw new HttpError(409, "La dirección del perfil es permanente para conservar el enlace NFC.", { slug: "No se puede cambiar una dirección ya creada." });
@@ -50,8 +52,9 @@ export async function saveDriver(input: DriverInput, id?: string) {
       } else if (existing) {
         await tx.vehicle.updateMany({ where: { driverId: existing.id }, data: { active: false } });
       }
+      await addVehiclePhoto(tx, driver.id, photo);
       return driver;
-    });
+    }));
   } catch (error) {
     if (error && typeof error === "object" && "code" in error) {
       if (error.code === "P2002") throw new HttpError(409, "Ya existe un conductor con esa dirección.", { slug: "Elige una dirección diferente." });

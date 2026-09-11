@@ -17,6 +17,10 @@ Se admiten 24 fotos por conductor, JPG/PNG/WebP de hasta 8 MB y 40 megapíxeles;
 
 El selector **Apariencia** aparece en todas las páginas: **Según mi dispositivo**, **Claro · Plata azul**, **Oscuro · Azul noche**. Sigue los cambios del sistema cuando está en automático y recuerda la elección en ese navegador. Las áreas azules de identidad conservan su contraste en los tres modos.
 
+## Uso para administradores
+
+En **Administración → Conductores → Nuevo conductor / Editar → Vehículo principal**, el administrador también puede seleccionar el archivo de la foto, revisar la vista previa y guardar. No se necesita un enlace HTTPS. En borrador, sólo el administrador y el conductor propietario pueden ver la imagen; al publicar el perfil aparece como foto principal y en el carrusel. Las imágenes anteriores se conservan y editar otros datos sin elegir una nueva no duplica fotos. Esta corrección no añade migraciones de base de datos.
+
 ## Actualizar en la máquina Ubuntu de AWS
 
 Usa la instalación existente en `~/driver-connect` y el proxy compartido. No combines estos comandos con `compose.aws.yaml`: ya hay otro Caddy ocupando 80/443. No ejecutes `down --volumes` en producción.

@@ -3,11 +3,12 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-export function VehiclePhotoInput({ currentUrl, disabled, error, onChange }: {
+export function VehiclePhotoInput({ currentUrl, disabled, error, onChange, mode = "driver" }: {
   currentUrl?: string;
   disabled: boolean;
   error?: string;
   onChange: (file: File | null) => void;
+  mode?: "admin" | "driver";
 }) {
   const input = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
@@ -35,7 +36,7 @@ export function VehiclePhotoInput({ currentUrl, disabled, error, onChange }: {
       <input ref={input} id="vehiclePhoto" name="vehiclePhoto" type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled}
         aria-invalid={Boolean(fileError || error)} aria-describedby="vehicle-photo-help vehicle-photo-error"
         onChange={event => select(event.currentTarget.files?.[0] || null)} />
-      <small id="vehicle-photo-help">Selecciona una foto de tu celular o computadora. JPG, PNG o WebP, hasta 8 MB. Al guardar será la foto principal y se añadirá a Mis fotos.</small>
+      <small id="vehicle-photo-help">Selecciona una foto de tu celular o computadora. JPG, PNG o WebP, hasta 8 MB. Al guardar será la foto principal y se añadirá {mode === "admin" ? "a la galería del conductor" : "a Mis fotos"}.</small>
     </label>
     {preview && <figure className="vehicle-photo-preview">
       <Image src={preview} alt={selection?.preview ? "Vista previa de la nueva foto del vehículo" : "Foto actual del vehículo"} width={800} height={500} unoptimized referrerPolicy="no-referrer" />
@@ -44,7 +45,7 @@ export function VehiclePhotoInput({ currentUrl, disabled, error, onChange }: {
     {selection && <>
       <button type="button" className="text-link" disabled={disabled} onClick={() => { if (input.current) input.current.value = ""; select(null); }}>Cancelar selección</button>
       <label className="checkbox-label"><input name="vehiclePhotoConsent" type="checkbox" value="yes" required disabled={disabled} />Tengo permiso para publicar esta foto y, si aparecen personas, cuento con su autorización.</label>
-      <small>La nueva foto será visible cuando tu perfil esté publicado. Las anteriores se conservan en Mis fotos.</small>
+      <small>La nueva foto será visible cuando {mode === "admin" ? "el perfil del conductor esté publicado. Las anteriores se conservan en su galería." : "tu perfil esté publicado. Las anteriores se conservan en Mis fotos."}</small>
     </>}
     <small id="vehicle-photo-error" className="field-error" role={fileError || error ? "alert" : undefined}>{fileError || error}</small>
   </div>;
