@@ -20,7 +20,8 @@
     "db:studio": "prisma studio",
     "admin:create": "node --import tsx scripts/create-admin.ts",
     "test": "node --import tsx --test tests/unit/*.test.ts",
-    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts"
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/integration/*.test.ts",
+    "calendar:worker": "node --import tsx scripts/calendar-worker.ts"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "7.10.0",
@@ -28,9 +29,11 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.0.0",
     "next": "^16.0.0",
+    "oauth4webapi": "3.8.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1",
+    "sharp": "0.35.4",
     "zod": "^4.5.4"
   },
   "devDependencies": {

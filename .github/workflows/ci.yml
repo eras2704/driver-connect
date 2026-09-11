@@ -19,8 +19,8 @@ jobs:
           python3 - <<'PY'
           import secrets
           from pathlib import Path
-          keys = ('MYSQL_PASSWORD', 'MYSQL_ROOT_PASSWORD', 'SESSION_SECRET', 'ADMIN_PASSWORD')
-          Path('.env').write_text(''.join(f'{key}={secrets.token_hex(32)}\n' for key in keys) + 'APP_ORIGIN=http://127.0.0.1:3000\nADMIN_USERNAME=ci-admin\nADMIN_NAME=CI Admin\nALLOW_INTEGRATION_TESTS=1\n')
+          keys = ('MYSQL_PASSWORD', 'MYSQL_ROOT_PASSWORD', 'SESSION_SECRET', 'ADMIN_PASSWORD', 'CALENDAR_TOKEN_KEY')
+          Path('.env').write_text(''.join(f'{key}={secrets.token_hex(32)}\n' for key in keys) + 'APP_ORIGIN=http://127.0.0.1:3000\nADMIN_USERNAME=ci-admin\nADMIN_NAME=CI Admin\nALLOW_INTEGRATION_TESTS=1\nCALENDAR_GOOGLE_CLIENT_ID=ci-calendar-client\nCALENDAR_GOOGLE_CLIENT_SECRET=ci-calendar-secret\n')
           Path('.env').chmod(0o600)
           PY
       - name: Validate Compose configuration

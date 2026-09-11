@@ -35,3 +35,6 @@ Thumbs.db
 .idea/
 .vscode/
 tmp/
+
+# Fotografías persistentes (se respaldan fuera de Git)
+data/uploads/

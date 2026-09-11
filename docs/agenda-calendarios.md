@@ -11,13 +11,23 @@
 
 Los viajes manuales se registran confirmados y admiten duraciones de 15 a 1440 minutos. Las fechas deben estar en el futuro y dentro de 366 días. La agenda se presenta en America/Panama (UTC−5); MySQL almacena instantes UTC.
 
-## Google Calendar
+## Cuenta sincronizada con el teléfono
 
-El botón abre `calendar.google.com/calendar/render` con título, horario UTC, zona horaria, recogida y destino. El usuario revisa el evento y lo guarda en su cuenta. El sistema puede mostrar el navegador o una aplicación compatible; no se fuerza una aplicación nativa específica y no se descarga un archivo.
+La conexión principal permite autorizar Google o Microsoft desde `/panel/calendario` (conductor) o el enlace privado de un viaje confirmado (pasajero). Escribe en el calendario principal de la cuenta elegida; la app ya instalada en el teléfono muestra los cambios si esa cuenta tiene la sincronización de calendario habilitada. No abre de forma universal todas las apps nativas de Android ni accede a calendarios locales sin cuenta.
 
-Es una copia independiente: editar o cancelar en Driver Connect no modifica esa copia. La interfaz lo indica junto al botón. Una integración que escriba y actualice eventos mediante la API de Google necesita un proyecto Google Cloud, OAuth y autorización de cada cuenta; no se simula esa conexión ni se solicitan credenciales de Google en Driver Connect.
+El conductor conecta sus viajes confirmados futuros y las futuras confirmaciones. El pasajero conecta solo ese viaje. Un proceso Docker renueva autorizaciones y aplica cambios de horario y cancelaciones. No hay sincronización de vuelta: editar en el teléfono no altera la reserva. Los avisos siguen siendo responsabilidad de la app Calendario y del canal habitual del conductor.
 
-Para suscribir toda la agenda a Google desde un ordenador, también se puede usar la URL privada HTTPS en Google Calendar → Otros calendarios → Desde URL. Google documenta ese procedimiento para ordenador. La interfaz móvil principal utiliza el botón por viaje, sin exigir ese paso.
+Se requiere configurar al menos un cliente OAuth y mantener activo `calendar-worker`; consulta [activar calendarios y actualizar AWS](actualizar-fotos-temas-calendario.md). Sin credenciales, la interfaz muestra que la administración debe activar la conexión y no simula que funcione.
+
+Las credenciales se cifran con AES-256-GCM y una clave separada. La autorización usa PKCE, estado de un solo uso, caducidad y cookie de navegador. El pasajero conserva la administración de su conexión en el navegador donde la autorizó; compartir el enlace de la reserva no permite desconectar otra cuenta. Al cerrar sesión, el conductor conserva su autorización; restablecer o desactivar su acceso la revoca. Renovar un enlace de pasajero revoca sus conexiones. La renovación de la suscripción de iPhone no afecta a la cuenta Google/Microsoft.
+
+Las escrituras se encolan en la misma transacción que la reserva. El trabajador usa un bloqueo con caducidad, versiones y reintentos progresivos. Google usa un ID de evento persistente; Microsoft usa `transactionId` y una propiedad extendida para recuperar una creación interrumpida. Solo se modifican eventos creados por esta integración. La revocación detiene operaciones nuevas; una petición que ya estaba en curso puede terminar.
+
+Desconectar borra el token guardado, pero conserva los identificadores del evento para una futura reconexión de la misma cuenta. Cambiar de cuenta deja de actualizar la anterior; sus eventos deben eliminarse manualmente si no se necesitan. Si el usuario elimina un evento desde el proveedor, no se recrea automáticamente. No combines la conexión, la suscripción Apple y una copia manual del mismo viaje, para evitar duplicados.
+
+## Copia manual en Google Calendar
+
+La opción secundaria abre un formulario de evento en Google. Es una copia independiente y requiere actualizarla manualmente; no es la nueva conexión automática.
 
 ## Calendario de iPhone
 

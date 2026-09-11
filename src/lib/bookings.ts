@@ -1,4 +1,5 @@
 import "server-only";
+import { queueBooking } from "./cloud-calendar/queue";
 import { db } from "./db";
 import { requireApiDriver, requireDriver } from "./driver-session";
 import { HttpError } from "./http";
@@ -53,6 +54,7 @@ export async function saveBooking(input: ManualBookingInput, id?: string, expect
     if (!existing || existing.status === "CONFIRMED") await noOverlap(tx, actor.driverId, interval.startsAt, interval.endsAt, id);
     const data = { serviceName: input.serviceName, customerName: input.customerName, phone: input.phone, email: input.email || null, pickup: input.pickup, destination: input.destination, notes: input.notes || null, passengers: input.passengers, ...interval };
     const booking = existing ? await tx.booking.update({ where: { id: existing.id }, data: { ...data, version: { increment: 1 } } }) : await tx.booking.create({ data: { ...data, driverId: actor.driverId, status: "CONFIRMED", wasConfirmed: true, source: "MANUAL" } });
+    await queueBooking(tx, booking);
     return { id: booking.id, path: passengerPath(booking) };
   });
 }
@@ -70,6 +72,7 @@ export async function changeBookingStatus(id: string, status: Exclude<TripStatus
       await noOverlap(tx, actor.driverId, booking.startsAt, booking.endsAt, id);
     }
     await tx.booking.update({ where: { id }, data: { status, version: { increment: 1 }, ...(status === "CONFIRMED" ? { wasConfirmed: true } : {}) } });
+    await queueBooking(tx, booking);
     return { ok: true };
   });
 }

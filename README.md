@@ -53,7 +53,7 @@ El conductor puede editar su presentación, contacto, servicios y vehículo. La 
 
 Un perfil publicado con cuenta activa y servicios muestra **Solicitar un traslado**. El pasajero recibe un enlace privado para consultar su solicitud. Una solicitud permanece pendiente hasta que el conductor confirma; no implica precio ni disponibilidad aceptados. No se envían mensajes o correos automáticamente.
 
-- **Google Calendar (Android, iPhone o navegador):** abre un evento prellenado para revisar y guardar, sin archivo descargado. Es una copia; las modificaciones o cancelaciones se actualizan manualmente.
+- **Calendario del teléfono:** conexión OAuth con Google o Microsoft para escribir y actualizar viajes en una cuenta ya sincronizada en la app del dispositivo. Requiere credenciales del proveedor y el trabajador Docker. También se conserva la copia manual en Google como alternativa.
 - **Calendario de iPhone:** abre una suscripción privada, de un viaje para el pasajero o de toda la agenda para el conductor. Requiere una dirección HTTPS pública y confirmación del usuario. Las actualizaciones dependen de la sincronización de Calendario.
 
 El protocolo iCalendar se sirve desde la aplicación como una suscripción; no se genera un archivo para descargar ni se solicita importar uno. No se escribe silenciosamente en calendarios del teléfono. Los enlaces privados se pueden revocar. Consulta [agenda y calendarios](docs/agenda-calendarios.md) y [criterios de integración de las dos versiones](docs/integracion-versiones.md).
@@ -124,3 +124,11 @@ git push -u origin codex/nombre-del-cambio
 ```
 
 Abrir un pull request a `main` después de validar el cambio. No subir `.env`, claves, respaldos ni fotografías o datos reales de conductores. Revisar siempre el contenido del commit; `.gitignore` excluye las rutas habituales, pero no identifica datos sensibles en archivos arbitrarios.
+
+## Fotos y apariencia
+
+El conductor dispone de `/panel/fotos`: hasta 24 fotos de viajes y vehículo, ordenables, con descripción y eliminación. Se normalizan a WebP, sin metadatos EXIF, y se almacenan en el volumen Docker `driver_uploads`. La primera del vehículo se usa como portada; el perfil publicado incluye un carrusel táctil y de teclado. Los borradores solo sirven fotos al conductor propietario.
+
+La apariencia admite plata azul, azul noche o el tema del dispositivo, con preferencia local persistente. Formularios, reservas, agenda y administración comparten colores semánticos.
+
+[Actualización de AWS y activación de calendarios](docs/actualizar-fotos-temas-calendario.md). No usar el antiguo paquete que solo contenía dos archivos de estilos: esta versión incluye dependencias, rutas, almacenamiento y migración.

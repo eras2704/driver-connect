@@ -4,6 +4,7 @@ const demo: PublicDriver = {
   slug: "demo", name: "Daniel Ríos", location: "Ciudad de Panamá", experience: 7, languages: ["Español", "English"],
   phone: null, whatsapp: null, email: null, photoUrl: null, verified: false, bookingEnabled: false,
   description: "Traslados privados en Panamá, con atención a los detalles y un trato cercano. Del aeropuerto a tu próxima reunión: disfruta el camino, yo me encargo del recorrido.",
+  photos: [],
   services: [
     { name: "Traslados al aeropuerto", icon: "plane", description: "Llegadas y salidas de Tocumen, coordinadas con tu itinerario. Tu viaje comienza con calma." },
     { name: "Traslados ejecutivos", icon: "briefcase", description: "Un conductor para tus reuniones, compromisos y recorridos de trabajo. Espacio para seguir con tu día." },

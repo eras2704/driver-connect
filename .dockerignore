@@ -21,3 +21,5 @@ public/uploads
 src/generated
 docs
 tmp
+
+data/uploads

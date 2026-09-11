@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeControl } from "@/components/theme-control";
+import { themeScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "Daniel Ríos · Perfil de muestra | Driver Connect",
@@ -9,9 +11,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#081728",
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}</body></html>;
+  return <html lang="es" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head><body><ThemeControl />{children}</body></html>;
 }

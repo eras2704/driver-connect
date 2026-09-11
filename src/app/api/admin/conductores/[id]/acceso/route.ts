@@ -1,3 +1,4 @@
+import { disconnected } from "@/lib/cloud-calendar/queue";
 import { z } from "zod";
 import { hash } from "bcryptjs";
 import { db } from "@/lib/db";
@@ -15,7 +16,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const passwordHash = await hash(parsed.data.password, 12);
     try {
       await db().$transaction(async tx => {
-        const user = await tx.driverUser.upsert({ where: { driverId: id }, create: { driverId: id, username: parsed.data.username, passwordHash, active: parsed.data.active, mustChangePassword: true }, update: { username: parsed.data.username, passwordHash, active: parsed.data.active, mustChangePassword: true, calendarEnabled: false, calendarVersion: { increment: 1 } } });
+        const user = await tx.driverUser.upsert({ where: { driverId: id }, create: { driverId: id, username: parsed.data.username, passwordHash, active: parsed.data.active, mustChangePassword: true }, update: { username: parsed.data.username, passwordHash, active: parsed.data.active, mustChangePassword: true, calendarEnabled: false, calendarVersion: { increment: 1 }, accessVersion: { increment: 1 } } });
+        await tx.calendarConnection.updateMany({ where: { driverUserId: user.id }, data: disconnected });
         await tx.driverSession.deleteMany({ where: { userId: user.id } });
       });
     } catch (error) { if (error && typeof error === "object" && "code" in error && error.code === "P2002") throw new HttpError(409, "Ese nombre de usuario ya está en uso."); throw error; }
@@ -31,8 +33,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     await db().$transaction(async tx => {
       const user = await tx.driverUser.findUnique({ where: { driverId: id } });
       if (!user) throw new HttpError(404, "Este conductor todavía no tiene acceso.");
-      await tx.driverUser.update({ where: { id: user.id }, data: { active: parsed.data.active, calendarEnabled: false, calendarVersion: { increment: 1 } } });
-      await tx.driverSession.deleteMany({ where: { userId: user.id } });
+      await tx.driverUser.update({ where: { id: user.id }, data: { active: parsed.data.active, calendarEnabled: false, calendarVersion: { increment: 1 }, accessVersion: { increment: 1 } } });
+      await tx.calendarConnection.updateMany({ where: { driverUserId: user.id }, data: disconnected });
+        await tx.driverSession.deleteMany({ where: { userId: user.id } });
     });
     return json({ ok: true });
   });

@@ -7,6 +7,7 @@ export async function publicDriver(slug: string) {
   const driver = await db().driver.findFirst({ where: { slug, active: true }, select: {
     slug: true, name: true, phone: true, whatsapp: true, email: true, location: true, experience: true,
     languages: true, description: true, photoUrl: true, verified: true,
+    photos: { orderBy: [{ position: "asc" }, { id: "asc" }], take: 24, select: { id: true, caption: true, category: true, width: true, height: true } },
     user: { select: { active: true } },
     services: { where: { active: true }, orderBy: { name: "asc" }, select: { name: true, description: true, icon: true } },
     vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1, select: { brand: true, model: true, year: true, color: true, passengers: true, description: true, photoUrl: true } },

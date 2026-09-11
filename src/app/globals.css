@@ -479,3 +479,79 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .calendar-day:hover, .calendar-day.selected { background: var(--raised); }
 .calendar-day:focus-visible { outline-offset: -3px; }
 .public-utility .share-control .button { box-shadow: none; }
+
+/* Plata azul y azul noche comparten jerarquía, estados y tipografía. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ink: #102d48; --muted: #435e76; --accent: #215a85;
+  --line: #bbcddd; --control-line: #6b849b; --paper: #eaf1f8;
+  --surface: #e2edf6; --panel: #f5f8fc; --field: #f7faff; --raised: #cfdfed;
+  --on-accent: #f7fbff; --success: #166342; --success-surface: #dcefe6;
+  --warning: #795313; --warning-surface: #f4e8cb; --danger: #973548; --danger-surface: #f9e5e9;
+  --metal-page: radial-gradient(ellipse at 90% 0%, #adcce655, transparent 55%), linear-gradient(150deg, #f0f5fa, #eaf1f8 65%, #dde9f3);
+  --metal-panel: linear-gradient(145deg, #f9fcff, #edf4fa 55%, #e4eef6);
+  --metal-action: linear-gradient(135deg, #285c85, #184466 55%, #2a5b80);
+  --panel-shadow: inset 0 1px 0 #ffffff, 0 10px 28px #173c5810;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  color-scheme: light;
+  --ink: #102d48; --muted: #435e76; --accent: #215a85;
+  --line: #bbcddd; --control-line: #6b849b; --paper: #eaf1f8;
+  --surface: #e2edf6; --panel: #f5f8fc; --field: #f7faff; --raised: #cfdfed;
+  --on-accent: #f7fbff; --success: #166342; --success-surface: #dcefe6;
+  --warning: #795313; --warning-surface: #f4e8cb; --danger: #973548; --danger-surface: #f9e5e9;
+  --metal-page: radial-gradient(ellipse at 90% 0%, #adcce655, transparent 55%), linear-gradient(150deg, #f0f5fa, #eaf1f8 65%, #dde9f3);
+  --metal-panel: linear-gradient(145deg, #f9fcff, #edf4fa 55%, #e4eef6);
+  --metal-action: linear-gradient(135deg, #285c85, #184466 55%, #2a5b80);
+  --panel-shadow: inset 0 1px 0 #ffffff, 0 10px 28px #173c5810;
+} }
+
+.appearance-bar { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; padding: .45rem 5%; background: var(--surface); border-bottom: 1px solid var(--line); font-size: .875rem; }
+.appearance-bar select { background: var(--field); color: var(--ink); border: 1px solid var(--control-line); border-radius: 2rem; padding: .5rem .75rem; min-height: 40px; max-width: 70%; font: inherit; }
+.button-primary, .public-reserve-button { border-color: var(--control-line); }
+.button-primary:hover, .public-reserve-button:hover { background: var(--metal-action); filter: brightness(1.08); }
+.button-secondary { background: var(--metal-panel); }
+.portal-topbar, .admin-header, .agenda-board-header { background: var(--metal-panel); }
+.calendar-day { background: var(--panel); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+.public-mobile-actions { background: color-mix(in srgb, var(--paper) 94%, transparent); }
+.login-story, .portal-sidebar, .public-contact, .contact-section, .reservation-intro, .demo-bar { --accent: #a8cfee; --ink: #e9f2fb; --muted: #b2c5d7; --line: #355370; --on-accent: #0a2034; --metal-action: linear-gradient(135deg, #c7dff2, #8db7dc 45%, #b1d0e8); }
+.visual-caption, .photo-caption, .public-monogram { --accent: #a8cfee; }
+select, textarea { font: inherit; }
+.booking-status, .trip-service, .trip-main p, .detail-data dt, .day-event, .portal-nav, .form-grid small { font-size: .875rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+.photo-gallery { border-top: 1px solid var(--line); padding: 4rem 0; }
+.gallery-filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+.gallery-filters button { padding: .7rem 1.1rem; min-height: 44px; border-radius: 2rem; border: 1px solid var(--control-line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; font-size: .875rem; }
+.gallery-filters button[aria-pressed=true] { background: var(--metal-action); color: var(--on-accent); }
+.gallery-track { position: relative; display: flex; gap: 1.4rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--control-line) var(--surface); padding-bottom: 1rem; }
+.gallery-slide { scroll-snap-align: start; flex: 0 0 min(85%, 48rem); min-width: 0; margin: 0; background: var(--metal-panel); border: 1px solid var(--line); border-radius: 1rem; overflow: hidden; box-shadow: var(--panel-shadow); }
+.gallery-slide:last-child { scroll-snap-align: end; }
+.gallery-slide img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; }
+.gallery-slide figcaption { padding: 1.2rem 1.5rem; }
+.gallery-slide figcaption span { color: var(--accent); font-size: .75rem; letter-spacing: .12em; }
+.gallery-slide figcaption p { margin-top: .6rem; line-height: 1.65; overflow-wrap: anywhere; }
+.gallery-navigation { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; color: var(--muted); }
+.gallery-navigation > div { display: flex; gap: .6rem; }
+.gallery-navigation .button { min-width: 48px; border-radius: 50%; }
+.gallery-navigation button:disabled { cursor: default; }
+.photo-manager-intro { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.photo-upload { margin-bottom: 1.5rem; }
+.photo-upload input[type=file] { padding: 1rem; border-style: dashed; }
+.photo-upload input::file-selector-button { padding: .65rem .8rem; border: 1px solid var(--control-line); border-radius: .4rem; background: var(--surface); color: var(--ink); margin-right: 1rem; cursor: pointer; }
+.upload-preview { max-height: 22rem; width: 100%; object-fit: contain; background: var(--field); border-radius: .7rem; }
+.photo-management-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
+.managed-photo + .managed-photo { margin-top: 0; }
+.managed-photo > img { width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; border-radius: .6rem; margin-bottom: 1.2rem; }
+.photo-tools { display: flex; gap: .5rem; margin-top: 1rem; }
+.photo-delete { color: var(--danger); margin-left: auto; }
+@media(max-width:760px) { .photo-management-grid { grid-template-columns: 1fr; }.gallery-slide { flex-basis: 92%; }.photo-gallery { padding: 3rem 0; }.gallery-slide figcaption { padding: 1rem; }.public-section-heading h2 { overflow-wrap: anywhere; } }
+
+.account-connection > p + p { margin-top: .8rem; }.calendar-account { border: 1px solid var(--line); background: var(--field); border-radius: .7rem; padding: 1rem; margin: 1.2rem 0; overflow-wrap: anywhere; }.calendar-details { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1rem; }.calendar-details summary { cursor: pointer; color: var(--accent); min-height: 44px; line-height: 1.6; }.refresh-calendar { background: none; border: 0; padding: .8rem 0; cursor: pointer; font: inherit; font-size: .875rem; }
+
+.portal-sidebar { --raised: #244766; }.gallery-track { scroll-padding-right: 1px; }.gallery-slide:last-child { margin-right: max(0px, calc(100% - min(85%, 48rem))); scroll-snap-align: start; }
+@media(max-width:760px) { .gallery-slide:last-child { margin-right: 8%; } }
+::selection { background: #9dc6e8; color: #102d48; }
+
+.gallery-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }.private-booking .detail-card h1 { font-size: clamp(2.2rem,5vw,3.5rem); margin-bottom: 1.5rem; }.private-booking .detail-card > p + h2 { margin-top: 2rem; }

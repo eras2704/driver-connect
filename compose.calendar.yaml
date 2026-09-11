@@ -1,0 +1,27 @@
+# Añadir a los archivos Compose actuales después de configurar las credenciales OAuth.
+services:
+  app:
+    environment: &calendar_environment
+      CALENDAR_TOKEN_KEY: ${CALENDAR_TOKEN_KEY:?Configura una clave de cifrado independiente}
+      CALENDAR_GOOGLE_CLIENT_ID: ${CALENDAR_GOOGLE_CLIENT_ID:-}
+      CALENDAR_GOOGLE_CLIENT_SECRET: ${CALENDAR_GOOGLE_CLIENT_SECRET:-}
+      CALENDAR_MICROSOFT_CLIENT_ID: ${CALENDAR_MICROSOFT_CLIENT_ID:-}
+      CALENDAR_MICROSOFT_CLIENT_SECRET: ${CALENDAR_MICROSOFT_CLIENT_SECRET:-}
+  calendar-worker:
+    build:
+      context: .
+      target: migrator
+    command: [pnpm, calendar:worker]
+    restart: unless-stopped
+    init: true
+    environment:
+      <<: *calendar_environment
+      DATABASE_URL: mysql://driver_connect:${MYSQL_PASSWORD:?Define MYSQL_PASSWORD}@db:3306/driver_connect
+      APP_ORIGIN: ${APP_ORIGIN:?Define APP_ORIGIN}
+      SESSION_SECRET: ${SESSION_SECRET:?Define SESSION_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 60s
