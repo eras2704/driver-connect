@@ -538,8 +538,13 @@ select, textarea { font: inherit; }
 .gallery-navigation button:disabled { cursor: default; }
 .photo-manager-intro { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
 .photo-upload { margin-bottom: 1.5rem; }
-.photo-upload input[type=file] { padding: 1rem; border-style: dashed; }
-.photo-upload input::file-selector-button { padding: .65rem .8rem; border: 1px solid var(--control-line); border-radius: .4rem; background: var(--surface); color: var(--ink); margin-right: 1rem; cursor: pointer; }
+.photo-upload input[type=file], .vehicle-photo-input input[type=file] { padding: 1rem; border-style: dashed; }
+.photo-upload input::file-selector-button, .vehicle-photo-input input::file-selector-button { padding: .65rem .8rem; border: 1px solid var(--control-line); border-radius: .4rem; background: var(--surface); color: var(--ink); margin-right: 1rem; cursor: pointer; }
+.vehicle-photo-input { display: grid; gap: 1rem; min-width: 0; padding: 1.25rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); }
+.vehicle-photo-input > .text-link { justify-self: start; background: none; border: 0; padding: 0; cursor: pointer; }
+.vehicle-photo-preview { margin: 0; min-width: 0; }
+.vehicle-photo-preview img { display: block; width: 100%; height: auto; max-height: 24rem; object-fit: contain; border-radius: .6rem; background: var(--field); }
+.vehicle-photo-preview figcaption { color: var(--muted); font-size: .875rem; margin-top: .65rem; overflow-wrap: anywhere; }
 .upload-preview { max-height: 22rem; width: 100%; object-fit: contain; background: var(--field); border-radius: .7rem; }
 .photo-management-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
 .managed-photo + .managed-photo { margin-top: 0; }

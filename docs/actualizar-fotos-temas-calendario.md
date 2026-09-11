@@ -4,6 +4,10 @@ Esta versión añade galería, fotos del vehículo, tres apariencias y conexión
 
 ## Uso para los conductores
 
+Para cambiar la foto principal del carro, entrar en **Mi perfil → Vehículo principal → Fotografía del vehículo**. Seleccionar el archivo, revisar la vista previa, confirmar permiso para publicarlo y pulsar **Guardar cambios**. Ya no se necesita un enlace HTTPS en este campo. La foto se guarda junto con los datos del perfil, queda primera en el álbum Vehículo y aparece también en el carrusel. Las anteriores se conservan. Para guardar sólo cambios de texto, no seleccionar otra foto.
+
+Para gestionar el resto de la galería:
+
 1. Entrar en **Espacio del conductor → Mis fotos**.
 2. Seleccionar una imagen del celular o computadora, elegir **Viajes** o **Vehículo**, escribir su descripción y confirmar permiso para publicarla.
 3. Pulsar **Subir foto**. Si el perfil está publicado, aparece en el carrusel inmediatamente. Si es borrador, permanece privada hasta que administración publique el perfil.
