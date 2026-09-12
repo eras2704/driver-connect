@@ -8,6 +8,10 @@ Para cambiar la foto personal, entrar en **Mi perfil → Datos del conductor →
 
 Para cambiar la foto principal del carro, entrar en **Mi perfil → Vehículo principal → Fotografía del vehículo**. Seleccionar el archivo, revisar la vista previa, confirmar permiso para publicarlo y pulsar **Guardar cambios**. Ya no se necesita un enlace HTTPS en este campo. La foto se guarda junto con los datos del perfil, queda primera en el álbum Vehículo y aparece también en el carrusel. Las anteriores se conservan. Para guardar sólo cambios de texto, no seleccionar otra foto.
 
+Para añadir imágenes a los servicios, entrar en **Mi perfil → Fotos de los servicios** (el enlace de la sección Servicios baja hasta esos controles). Cada servicio activado permite elegir una foto, ver la vista previa y pulsar **Guardar foto del servicio**. Se guarda una foto propia por servicio y conductor. También se puede reemplazar o quitar. Si acabas de activar un servicio, guarda primero el perfil para que aparezca en esta sección.
+
+El perfil público muestra una sola acción **Solicitar un traslado**, en la cabecera. Se retiraron las solicitudes repetidas de las tarjetas de servicios, el bloque de contacto y la barra móvil; el formulario de reservas sigue disponible desde esa acción principal.
+
 Para gestionar el resto de la galería:
 
 1. Entrar en **Espacio del conductor → Mis fotos**.
@@ -23,7 +27,11 @@ El selector **Apariencia** aparece en todas las páginas: **Según mi dispositiv
 
 En **Administración → Conductores → Nuevo conductor / Editar**, el administrador puede subir la foto personal en **Datos del conductor → Fotografía del conductor** y la del auto en **Vehículo principal**. Ambos campos permiten seleccionar un archivo y revisar la vista previa. En borrador, sólo el administrador y el conductor propietario pueden ver las imágenes. Al publicar, el retrato aparece junto al nombre y la foto del auto como portada y en el carrusel. Editar otros datos sin elegir una nueva imagen conserva las fotos actuales.
 
+Después de guardar el conductor, **Fotos de los servicios** permite a administración subir, reemplazar o quitar la imagen de cada servicio activado. La imagen sólo pertenece al conductor que se está editando. Si el servicio se desactiva o se retira del perfil, deja de ser pública; se conserva para volver a usarla si se reactiva.
+
 La foto personal requiere la migración `20260911010000_driver_portrait`, que añade una columna opcional y su índice a la tabla de conductores. Las fotos personales que ya usan enlaces HTTPS se siguen mostrando hasta que se suba un archivo nuevo. Las fotos personales nuevas se guardan en el mismo volumen de imágenes, por lo que están incluidas en el respaldo de `uploads`.
+
+Las fotos por servicio requieren además `20260912000000_driver_service_photos`, que crea una tabla de imágenes por conductor y servicio. También se incluyen en el respaldo de `uploads`. Cada foto admite JPG, PNG o WebP de hasta 8 MB. Esta tabla y la columna de retratos se crean al ejecutar el paso de migración indicado abajo.
 
 ## Actualizar en la máquina Ubuntu de AWS
 
@@ -81,7 +89,7 @@ Guarda también una copia segura de `.env.production`. Base de datos, fotografí
 
 ### 3. Compilar, migrar y actualizar la aplicación
 
-Ejecuta la migración antes de sustituir la aplicación; la nueva versión necesita la columna de la foto personal. Estos pasos sirven también para actualizar únicamente las fotografías, sin activar el calendario.
+Ejecuta la migración antes de sustituir la aplicación; la nueva versión necesita la columna de la foto personal y la tabla de fotos de servicios. Estos pasos sirven también para actualizar únicamente las fotografías, sin activar el calendario.
 
 ```bash
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml build app migrate

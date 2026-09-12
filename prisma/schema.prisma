@@ -30,6 +30,7 @@ model Driver {
   user        DriverUser?
   bookings    Booking[]
   photos      DriverPhoto[]
+  servicePhotos DriverServicePhoto[]
 }
 
 model Vehicle {
@@ -60,6 +61,23 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   drivers     Driver[]
+  photos      DriverServicePhoto[]
+}
+
+model DriverServicePhoto {
+  id         String @id @default(cuid())
+  driverId   String
+  serviceId  String
+  storageKey String @unique @db.VarChar(64)
+  width      Int
+  height     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  driver     Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  service    Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, serviceId])
+  @@index([serviceId])
 }
 
 model AdminUser {

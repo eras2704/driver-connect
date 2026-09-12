@@ -3,20 +3,21 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-export function ProfilePhotoInput({ currentUrl, disabled, error, onChange, kind, mode = "driver" }: {
+export function ProfilePhotoInput({ currentUrl, disabled, error, onChange, kind, inputName, mode = "driver" }: {
   currentUrl?: string;
   disabled: boolean;
   error?: string;
   onChange: (file: File | null) => void;
-  kind: "driver" | "vehicle";
+  kind: "driver" | "vehicle" | "service";
+  inputName?: string;
   mode?: "admin" | "driver";
 }) {
   const input = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
   const [selection, setSelection] = useState<{ name: string; preview: string | null } | null>(null);
   const [fileError, setFileError] = useState("");
-  const name = kind === "driver" ? "driverPhoto" : "vehiclePhoto";
-  const subject = kind === "driver" ? "conductor" : "vehículo";
+  const name = inputName || (kind === "driver" ? "driverPhoto" : kind === "vehicle" ? "vehiclePhoto" : "servicePhoto");
+  const subject = kind === "driver" ? "conductor" : kind === "vehicle" ? "vehículo" : "servicio";
 
   useEffect(() => () => {
     if (previewRef.current) URL.revokeObjectURL(previewRef.current);
@@ -39,7 +40,7 @@ export function ProfilePhotoInput({ currentUrl, disabled, error, onChange, kind,
       <input ref={input} id={name} name={name} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled}
         aria-invalid={Boolean(fileError || error)} aria-describedby={`${name}-help ${name}-error`}
         onChange={event => select(event.currentTarget.files?.[0] || null)} />
-      <small id={`${name}-help`}>Selecciona una foto de tu celular o computadora. JPG, PNG o WebP, hasta 8 MB. {kind === "driver" ? "Aparecerá junto al nombre del conductor en el perfil. Elige una imagen con el rostro centrado." : `Al guardar será la foto principal y se añadirá ${mode === "admin" ? "a la galería del conductor" : "a Mis fotos"}.`}</small>
+      <small id={`${name}-help`}>Selecciona una foto de tu celular o computadora. JPG, PNG o WebP, hasta 8 MB. {kind === "driver" ? "Aparecerá junto al nombre del conductor en el perfil. Elige una imagen con el rostro centrado." : kind === "service" ? "Se mostrará en la tarjeta de este servicio." : `Al guardar será la foto principal y se añadirá ${mode === "admin" ? "a la galería del conductor" : "a Mis fotos"}.`}</small>
     </label>
     {preview && <figure className="vehicle-photo-preview">
       <Image src={preview} alt={selection?.preview ? `Vista previa de la nueva foto del ${subject}` : `Foto actual del ${subject}`} width={800} height={500} unoptimized referrerPolicy="no-referrer" />
@@ -48,7 +49,7 @@ export function ProfilePhotoInput({ currentUrl, disabled, error, onChange, kind,
     {selection && <>
       <button type="button" className="text-link" disabled={disabled} onClick={() => { if (input.current) input.current.value = ""; select(null); }}>Cancelar selección</button>
       <label className="checkbox-label"><input name={`${name}Consent`} type="checkbox" value="yes" required disabled={disabled} />Tengo permiso para publicar esta foto y, si aparecen personas, cuento con su autorización.</label>
-      <small>La nueva foto será visible cuando {mode === "admin" ? "el perfil del conductor esté publicado." : "tu perfil esté publicado."} {kind === "driver" ? "Al guardar, reemplazará la foto personal anterior." : `Las anteriores se conservan ${mode === "admin" ? "en su galería." : "en Mis fotos."}`}</small>
+      <small>La nueva foto será visible cuando {mode === "admin" ? "el perfil del conductor esté publicado." : "tu perfil esté publicado."} {kind === "driver" ? "Al guardar, reemplazará la foto personal anterior." : kind === "service" ? "Al guardar, reemplazará la foto anterior de este servicio." : `Las anteriores se conservan ${mode === "admin" ? "en su galería." : "en Mis fotos."}`}</small>
     </>}
     <small id={`${name}-error`} className="field-error" role={fileError || error ? "alert" : undefined}>{fileError || error}</small>
   </div>;
