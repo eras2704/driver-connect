@@ -20,6 +20,7 @@ model Driver {
   languages   Json?
   description String?     @db.Text
   photoUrl    String?     @db.Text
+  portraitStorageKey String? @unique @db.VarChar(64)
   verified    Boolean     @default(false)
   active      Boolean     @default(false)
   createdAt   DateTime    @default(now())

@@ -1,8 +1,10 @@
 # Fotos, temas y calendario del teléfono
 
-Esta versión añade galería, fotos del vehículo, tres apariencias y conexión de cuentas de calendario. La conexión automática necesita configuración externa; galería y temas funcionan sin cuentas Google/Microsoft.
+Esta versión añade galería, fotos del conductor y del vehículo, tres apariencias y conexión de cuentas de calendario. La conexión automática necesita configuración externa; galería y temas funcionan sin cuentas Google/Microsoft.
 
 ## Uso para los conductores
+
+Para cambiar la foto personal, entrar en **Mi perfil → Datos del conductor → Fotografía del conductor**, seleccionar el archivo del celular o computadora, revisar la vista previa circular y guardar. Conviene que el rostro esté centrado. Aparece junto al nombre en el perfil público y reemplaza la foto personal anterior. Se puede guardar al mismo tiempo que la foto del vehículo; si alguna foto o algún dato falla, se conservan los cambios previamente guardados.
 
 Para cambiar la foto principal del carro, entrar en **Mi perfil → Vehículo principal → Fotografía del vehículo**. Seleccionar el archivo, revisar la vista previa, confirmar permiso para publicarlo y pulsar **Guardar cambios**. Ya no se necesita un enlace HTTPS en este campo. La foto se guarda junto con los datos del perfil, queda primera en el álbum Vehículo y aparece también en el carrusel. Las anteriores se conservan. Para guardar sólo cambios de texto, no seleccionar otra foto.
 
@@ -13,13 +15,15 @@ Para gestionar el resto de la galería:
 3. Pulsar **Subir foto**. Si el perfil está publicado, aparece en el carrusel inmediatamente. Si es borrador, permanece privada hasta que administración publique el perfil.
 4. Las flechas cambian el orden. La primera imagen del álbum Vehículo pasa a ser la imagen principal del perfil. También se puede editar su descripción, cambiarla de álbum o eliminarla.
 
-Se admiten 24 fotos por conductor, JPG/PNG/WebP de hasta 8 MB y 40 megapíxeles; se convierten a WebP de máximo 2000 píxeles por lado y se retira EXIF. HEIC no se procesa: en iPhone usar una imagen JPG o el ajuste de cámara “Más compatible”. Las imágenes ya subidas no dependen del teléfono: permanecen en AWS.
+Se admiten 24 fotos de galería por conductor, más su foto personal. JPG/PNG/WebP de hasta 8 MB cada una y 40 megapíxeles; se convierten a WebP de máximo 2000 píxeles por lado y se retira EXIF. HEIC no se procesa: en iPhone usar una imagen JPG o el ajuste de cámara “Más compatible”. Las imágenes ya subidas no dependen del teléfono: permanecen en AWS.
 
 El selector **Apariencia** aparece en todas las páginas: **Según mi dispositivo**, **Claro · Plata azul**, **Oscuro · Azul noche**. Sigue los cambios del sistema cuando está en automático y recuerda la elección en ese navegador. Las áreas azules de identidad conservan su contraste en los tres modos.
 
 ## Uso para administradores
 
-En **Administración → Conductores → Nuevo conductor / Editar → Vehículo principal**, el administrador también puede seleccionar el archivo de la foto, revisar la vista previa y guardar. No se necesita un enlace HTTPS. En borrador, sólo el administrador y el conductor propietario pueden ver la imagen; al publicar el perfil aparece como foto principal y en el carrusel. Las imágenes anteriores se conservan y editar otros datos sin elegir una nueva no duplica fotos. Esta corrección no añade migraciones de base de datos.
+En **Administración → Conductores → Nuevo conductor / Editar**, el administrador puede subir la foto personal en **Datos del conductor → Fotografía del conductor** y la del auto en **Vehículo principal**. Ambos campos permiten seleccionar un archivo y revisar la vista previa. En borrador, sólo el administrador y el conductor propietario pueden ver las imágenes. Al publicar, el retrato aparece junto al nombre y la foto del auto como portada y en el carrusel. Editar otros datos sin elegir una nueva imagen conserva las fotos actuales.
+
+La foto personal requiere la migración `20260911010000_driver_portrait`, que añade una columna opcional y su índice a la tabla de conductores. Las fotos personales que ya usan enlaces HTTPS se siguen mostrando hasta que se suba un archivo nuevo. Las fotos personales nuevas se guardan en el mismo volumen de imágenes, por lo que están incluidas en el respaldo de `uploads`.
 
 ## Actualizar en la máquina Ubuntu de AWS
 
@@ -77,6 +81,8 @@ Guarda también una copia segura de `.env.production`. Base de datos, fotografí
 
 ### 3. Compilar, migrar y actualizar la aplicación
 
+Ejecuta la migración antes de sustituir la aplicación; la nueva versión necesita la columna de la foto personal. Estos pasos sirven también para actualizar únicamente las fotografías, sin activar el calendario.
+
 ```bash
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml build app migrate
 sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared-proxy.yaml run --rm --no-deps migrate
@@ -84,7 +90,7 @@ sudo docker compose --env-file .env.production -f compose.yaml -f compose.shared
 curl --fail --silent --show-error https://nfc.comunidaddeconductorespanama.com/api/health
 ```
 
-La migración agrega tablas y un contador de revocación; no elimina reservas, conductores ni contraseñas. Solo se sustituye el contenedor de la aplicación Driver Connect; puede haber una breve interrupción. Docker crea el volumen persistente `driver-connect_driver_uploads`. El Caddy y la API existentes conservan su configuración.
+La migración de retratos agrega una columna opcional y su índice. Las anteriores agregan tablas y un contador de revocación; no eliminan reservas, conductores ni contraseñas. Solo se sustituye el contenedor de la aplicación Driver Connect; puede haber una breve interrupción. Docker crea el volumen persistente `driver-connect_driver_uploads`. El Caddy y la API existentes conservan su configuración.
 
 Si falla la compilación o migración, no ejecutes el último paso. Para volver al código anterior conserva las nuevas tablas y restaura el respaldo de código; no reviertas la base ni borres volúmenes automáticamente. Si falla la aplicación después del cambio, consulta `logs --tail=80 app` antes de actuar.
 

@@ -16,9 +16,9 @@ export async function GET() {
 export async function POST(request: Request) {
   return handleApi(async () => {
     const actor = await requireApiAdmin(); assertOrigin(request);
-    const { body, file } = await readProfileRequest(request, `admin:${actor.id}`);
+    const { body, files } = await readProfileRequest(request, `admin:${actor.id}`);
     const result = driverSchema.safeParse(body);
     if (!result.success) throw new HttpError(400, "Revisa los campos del formulario.", fieldErrors(result.error));
-    return json(await saveDriver(result.data, undefined, file), 201);
+    return json(await saveDriver(result.data, undefined, files), 201);
   });
 }

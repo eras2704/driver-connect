@@ -3,7 +3,7 @@ import { db } from "./db";
 import { requireAdmin, requireApiAdmin } from "./admin-session";
 import { HttpError } from "./http";
 import type { DriverInput } from "./validation";
-import { addVehiclePhoto, withVehiclePhoto } from "./profile-photo";
+import { addVehiclePhoto, withProfilePhotos, replaceDriverPortrait, discardProfilePhoto, type ProfileFiles } from "./profile-photo";
 
 export async function listDrivers(query = "", page = 1) {
   await requireAdmin();
@@ -25,10 +25,10 @@ export async function editorData(id?: string) {
   return { driver, services };
 }
 
-export async function saveDriver(input: DriverInput, id?: string, file: File | null = null) {
+export async function saveDriver(input: DriverInput, id?: string, files: ProfileFiles = { vehicle: null, driver: null }) {
   await requireApiAdmin();
   try {
-    return await withVehiclePhoto(file, input.vehicle, photo => db().$transaction(async (tx) => {
+    const saved = await withProfilePhotos(files, input.vehicle, photos => db().$transaction(async (tx) => {
       if (id) await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${id} FOR UPDATE`;
       const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
       if (id && !existing) throw new HttpError(404, "No se encontró el conductor.");
@@ -52,9 +52,12 @@ export async function saveDriver(input: DriverInput, id?: string, file: File | n
       } else if (existing) {
         await tx.vehicle.updateMany({ where: { driverId: existing.id }, data: { active: false } });
       }
-      await addVehiclePhoto(tx, driver.id, photo);
-      return driver;
+      await addVehiclePhoto(tx, driver.id, photos.vehicle);
+      const previousPortrait = await replaceDriverPortrait(tx, driver.id, photos.driver);
+      return { driver, previousPortrait };
     }));
+    await discardProfilePhoto(saved.previousPortrait);
+    return saved.driver;
   } catch (error) {
     if (error && typeof error === "object" && "code" in error) {
       if (error.code === "P2002") throw new HttpError(409, "Ya existe un conductor con esa dirección.", { slug: "Elige una dirección diferente." });

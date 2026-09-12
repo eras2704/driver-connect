@@ -545,6 +545,7 @@ select, textarea { font: inherit; }
 .vehicle-photo-preview { margin: 0; min-width: 0; }
 .vehicle-photo-preview img { display: block; width: 100%; height: auto; max-height: 24rem; object-fit: contain; border-radius: .6rem; background: var(--field); }
 .vehicle-photo-preview figcaption { color: var(--muted); font-size: .875rem; margin-top: .65rem; overflow-wrap: anywhere; }
+.portrait-photo-input .vehicle-photo-preview img { width: 12rem; max-width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 3px solid var(--control-line); }
 .upload-preview { max-height: 22rem; width: 100%; object-fit: contain; background: var(--field); border-radius: .7rem; }
 .photo-management-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
 .managed-photo + .managed-photo { margin-top: 0; }
