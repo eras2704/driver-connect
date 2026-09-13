@@ -81,7 +81,7 @@ test("administración crea y edita conductores con foto, respeta borradores y gu
     assert.equal(await database.driverPhoto.count({ where: { driverId: id } }), 2);
     assert.equal((await media(photos[0].id)).status, 200);
     const publicHtml = await (await fetch(`${base}/conductor/${slug}`)).text();
-    assert.match(publicHtml, new RegExp(`class="public-visual"><img[^>]+src="/media/${photos[0].id}"`));
+    assert.match(publicHtml, new RegExp(`class="public-vehicle-image"[^>]*><img[^>]+src="/media/${photos[0].id}"`));
     assert.equal((await database.driver.findUniqueOrThrow({ where: { id: other.id } })).name, "Otro conductor");
     assert.equal(await database.driverPhoto.count({ where: { driverId: other.id } }), 0);
 

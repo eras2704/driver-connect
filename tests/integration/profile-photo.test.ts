@@ -59,7 +59,7 @@ test("la foto del vehículo se sube desde el perfil y se guarda junto con sus da
     assert.equal(media.status, 200); assert.equal(media.headers.get("content-type"), "image/webp");
 
     const html = await (await fetch(`${base}/conductor/${a.slug}`)).text();
-    assert.match(html, new RegExp(`class="public-visual"><img[^>]+src="/media/${photos[0].id}"`));
+    assert.match(html, new RegExp(`class="public-vehicle-image"[^>]*><img[^>]+src="/media/${photos[0].id}"`));
     const formHtml = await (await fetch(`${base}/panel/perfil`, { headers: { Cookie: a.cookie } })).text();
     assert.match(formHtml, /id="vehiclePhoto"[^>]*type="file"/);
     assert.doesNotMatch(formHtml, /Enlace a la fotografía del vehículo/);

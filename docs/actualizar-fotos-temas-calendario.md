@@ -12,6 +12,8 @@ Para añadir imágenes a los servicios, entrar en **Mi perfil → Fotos de los s
 
 El perfil público muestra una sola acción **Solicitar un traslado**, en la cabecera. Se retiraron las solicitudes repetidas de las tarjetas de servicios, el bloque de contacto y la barra móvil; el formulario de reservas sigue disponible desde esa acción principal.
 
+Las fotos del vehículo, galería y servicios se ajustan automáticamente sin estirarse ni recortarse. La portada adapta su proporción a la foto del vehículo y mantiene el texto fuera de la imagen; las tarjetas de la galería conservan marcos uniformes. El ajuste se aplica también a las fotos ya guardadas, sin volver a subirlas, en celular y computadora y en ambos temas. Esta corrección visual no requiere una migración adicional.
+
 Para gestionar el resto de la galería:
 
 1. Entrar en **Espacio del conductor → Mis fotos**.
