@@ -569,3 +569,12 @@ select, textarea { font: inherit; }
 
 .gallery-slide:only-child { flex-basis: 100%; margin-right: 0; }
 .gallery-track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }.private-booking .detail-card h1 { font-size: clamp(2.2rem,5vw,3.5rem); margin-bottom: 1.5rem; }.private-booking .detail-card > p + h2 { margin-top: 2rem; }
+
+.profile-qr-card { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.5rem; }
+.profile-qr-preview { flex: 0 0 240px; background: #fff; border-radius: .5rem; overflow: hidden; }
+.profile-qr-preview img { display: block; width: 100%; height: auto; }
+.profile-qr-content { min-width: 0; flex: 1; }
+.profile-qr-url { display: grid; gap: .5rem; margin: 1rem 0; font-size: .875rem; }
+.profile-qr-url input { width: 100%; min-width: 0; }
+.profile-qr-content .detail-actions { flex-wrap: wrap; }
+@media(max-width:760px) { .profile-qr-card { flex-direction: column; }.profile-qr-preview { flex-basis: auto; width: min(240px,100%); align-self: center; }.profile-qr-content { width: 100%; } }

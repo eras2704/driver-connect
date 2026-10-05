@@ -132,3 +132,9 @@ El conductor dispone de `/panel/fotos`: hasta 24 fotos de viajes y vehículo, or
 La apariencia admite plata azul, azul noche o el tema del dispositivo, con preferencia local persistente. Formularios, reservas, agenda y administración comparten colores semánticos.
 
 [Actualización de AWS y activación de calendarios](docs/actualizar-fotos-temas-calendario.md). No usar el antiguo paquete que solo contenía dos archivos de estilos: esta versión incluye dependencias, rutas, almacenamiento y migración.
+
+### QR para tarjetas NFC
+
+Cada perfil guardado muestra automáticamente su QR en la pantalla de edición del administrador y en **Panel → Mi perfil**, incluidos los perfiles existentes. Descarga SVG para imprenta o PNG de 1200 × 1200 píxeles. Ambos codifican el enlace público permanente del conductor, que también se muestra para grabarlo en el chip NFC.
+
+Configura `APP_ORIGIN` con el dominio público definitivo antes de imprimir: cambiar el dominio cambia el destino de los nuevos QR y requiere conservar el dominio anterior o sus redirecciones para las tarjetas ya impresas. Los perfiles en borrador tienen QR, pero sólo son accesibles públicamente después de publicarlos. El código se genera en el servidor sin servicios externos ni archivos adicionales en la base de datos. Conserva el margen blanco, imprime a partir de 3 × 3 cm y verifica el escaneo en la tarjeta final.
