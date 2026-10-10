@@ -13,7 +13,7 @@ export function DriverForm({ id, initial, services, mode = "admin", vehicleCover
   const [driverPhoto, setDriverPhoto] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const field = (name: string, label: string, value = "", type = "text", required = false, help?: string, maxLength = 191) => <label key={name} htmlFor={name}>{label}<input id={name} name={name} type={type} defaultValue={value} required={required} maxLength={maxLength} readOnly={name === "slug" && Boolean(id)} aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `${name}-error` : help ? `${name}-help` : undefined} />{help && <small id={`${name}-help`}>{help}</small>}{errors[name] && <small id={`${name}-error`} className="field-error">{errors[name]}</small>}</label>;
+  const field = (name: string, label: string, value = "", type = "text", required = false, help?: string, maxLength = 191) => <label key={name} htmlFor={name}>{label}<input id={name} name={name} type={type} defaultValue={value} required={required} maxLength={maxLength} readOnly={name === "slug" && mode === "driver"} aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `${name}-error` : help ? `${name}-help` : undefined} />{help && <small id={`${name}-help`}>{help}</small>}{errors[name] && <small id={`${name}-error`} className="field-error">{errors[name]}</small>}</label>;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,7 +55,7 @@ export function DriverForm({ id, initial, services, mode = "admin", vehicleCover
   return <form onSubmit={submit} className="driver-form">
     <section className="admin-card"><span className="eyebrow">01 / PERFIL</span><h2>Datos del conductor</h2><div className="form-grid">
       {field("name", "Nombre público", initial?.name, "text", true)}
-      {field("slug", "Dirección del perfil", initial?.slug, "text", true, id ? "Esta dirección permanece fija para conservar tus tarjetas NFC." : "Ejemplo: daniel-rios. No se podrá cambiar después de crear el perfil.", 80)}
+      {field("slug", "Dirección del perfil", initial?.slug, "text", true, mode === "driver" ? "Administración puede cambiar esta dirección. Tus tarjetas seguirán funcionando." : "Ejemplo: daniel-rios. Puedes cambiarla después; el QR y los enlaces anteriores seguirán funcionando.", 80)}
       {field("location", "Ciudad o ubicación", initial?.location)}
       {field("experience", "Años de experiencia", String(initial?.experience ?? 0), "number", true)}
       {field("languages", "Idiomas", initial?.languages.join(", ") || "", "text", false, "Separa los idiomas con comas.", 400)}

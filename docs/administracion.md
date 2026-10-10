@@ -15,7 +15,7 @@ Abrir `/login-admin` sobre el origen de `APP_ORIGIN`. `localhost` y `127.0.0.1` 
 ## Gestionar conductores
 
 1. Entrar en Conductores y elegir Nuevo conductor.
-2. Definir nombre y dirección del perfil. La dirección no se puede cambiar una vez creada.
+2. Definir nombre y dirección del perfil. Administración puede cambiarla después: el QR conserva su enlace original y las direcciones anteriores continúan funcionando, reservadas al mismo conductor.
 3. Completar presentación y canales de contacto que se quieren hacer públicos. Los teléfonos requieren código de país.
 4. Seleccionar servicios e incluir opcionalmente el vehículo principal. Su placa sólo se muestra en administración.
 5. Guardar como borrador. Editar para activar Publicar perfil y, si corresponde, la verificación administrativa.

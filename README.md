@@ -15,7 +15,7 @@ Implementado con Next.js 16, React, TypeScript, Tailwind CSS, Prisma 7 y MySQL 8
 - Agenda mensual, solicitudes de traslado, viajes manuales, confirmación, edición y cancelación con protección contra cruces de horario.
 - Enlace privado para el pasajero y conexión con calendarios sin descarga manual.
 - Diseño unificado de perfiles, reservas y panel; contacto fijo en móvil y agenda de muestra en `/demo/agenda`.
-- Publicación y retiro de perfiles; la dirección permanece fija para conservar los enlaces NFC.
+- Publicación y retiro de perfiles; administración puede cambiar la dirección conservando los QR y enlaces anteriores.
 - Perfiles públicos conectados a MySQL, descarga vCard, WhatsApp, teléfono, correo y compartir, según los datos configurados.
 - Docker Compose y pruebas automatizadas contra el contenedor de producción y una base MySQL desechable.
 
@@ -138,3 +138,5 @@ La apariencia admite plata azul, azul noche o el tema del dispositivo, con prefe
 Cada perfil guardado muestra automáticamente su QR en la pantalla de edición del administrador y en **Panel → Mi perfil**, incluidos los perfiles existentes. Descarga SVG para imprenta o PNG de 1200 × 1200 píxeles. Ambos codifican el enlace público permanente del conductor, que también se muestra para grabarlo en el chip NFC.
 
 Configura `APP_ORIGIN` con el dominio público definitivo antes de imprimir: cambiar el dominio cambia el destino de los nuevos QR y requiere conservar el dominio anterior o sus redirecciones para las tarjetas ya impresas. Los perfiles en borrador tienen QR, pero sólo son accesibles públicamente después de publicarlos. El código se genera en el servidor sin servicios externos ni archivos adicionales en la base de datos. Conserva el margen blanco, imprime a partir de 3 × 3 cm y verifica el escaneo en la tarjeta final.
+
+Administración puede editar la dirección del perfil. El QR y el enlace para el chip NFC conservan la dirección original, y todas las direcciones anteriores siguen abriendo el mismo perfil. Esas direcciones quedan reservadas al conductor y no se pueden asignar a otro. La migración 20261005000000_driver_addresses registra las direcciones actuales antes de habilitar los cambios. Debe aplicarse antes de activar esta versión en AWS.

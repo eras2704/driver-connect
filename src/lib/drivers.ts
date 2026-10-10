@@ -3,6 +3,7 @@ import { db } from "./db";
 import { requireAdmin, requireApiAdmin } from "./admin-session";
 import { HttpError } from "./http";
 import type { DriverInput } from "./validation";
+import { driverAddressWhere } from "./driver-address";
 import { addVehiclePhoto, withProfilePhotos, replaceDriverPortrait, discardProfilePhoto, type ProfileFiles } from "./profile-photo";
 
 export async function listDrivers(query = "", page = 1) {
@@ -30,9 +31,10 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
   try {
     const saved = await withProfilePhotos(files, input.vehicle, photos => db().$transaction(async (tx) => {
       if (id) await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${id} FOR UPDATE`;
-      const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
+      const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, qrSlug: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
       if (id && !existing) throw new HttpError(404, "No se encontró el conductor.");
-      if (existing && existing.slug !== input.slug) throw new HttpError(409, "La dirección del perfil es permanente para conservar el enlace NFC.", { slug: "No se puede cambiar una dirección ya creada." });
+      const owner = await tx.driver.findFirst({ where: driverAddressWhere(input.slug), select: { id: true } });
+      if (owner && owner.id !== existing?.id) throw new HttpError(409, "Esta dirección pertenece a otro perfil o a una de sus tarjetas.", { slug: "Elige una dirección diferente." });
       const validServices = await tx.service.count({ where: { id: { in: input.serviceIds }, active: true } });
       if (validServices !== input.serviceIds.length) throw new HttpError(400, "Uno de los servicios ya no está disponible. Actualiza el formulario.");
       const data = {
@@ -42,8 +44,14 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
         active: input.active, verified: input.verified,
       };
       const driver = id
-        ? await tx.driver.update({ where: { id }, data: { ...data, services: { set: input.serviceIds.map((id) => ({ id })) } }, select: { id: true, slug: true } })
-        : await tx.driver.create({ data: { ...data, slug: input.slug, services: { connect: input.serviceIds.map((id) => ({ id })) } }, select: { id: true, slug: true } });
+        ? await tx.driver.update({ where: { id }, data: { ...data, slug: input.slug, qrSlug: existing?.qrSlug ?? existing?.slug ?? input.slug, services: { set: input.serviceIds.map((id) => ({ id })) } }, select: { id: true, slug: true } })
+        : await tx.driver.create({ data: { ...data, slug: input.slug, qrSlug: input.slug, services: { connect: input.serviceIds.map((id) => ({ id })) } }, select: { id: true, slug: true } });
+      // Unique address ownership also protects concurrent changes across profiles.
+      for (const slug of new Set([existing?.slug, input.slug].filter((value): value is string => Boolean(value)))) {
+        const address = await tx.driverAddress.findUnique({ where: { slug } });
+        if (address && address.driverId !== driver.id) throw new HttpError(409, "Esta dirección está reservada a otro perfil.", { slug: "Elige una dirección diferente." });
+        if (!address) await tx.driverAddress.create({ data: { slug, driverId: driver.id } });
+      }
       if (input.vehicle) {
         const vehicle = { ...input.vehicle, color: input.vehicle.color || null, plate: input.vehicle.plate || null, description: input.vehicle.description || null, photoUrl: input.vehicle.photoUrl || null, active: true };
         const vehicleId = existing?.vehicles[0]?.id;
