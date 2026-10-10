@@ -32,7 +32,7 @@ Los intentos de acceso se limitan en MySQL por ventanas de 15 minutos: ocho por 
 
 ## Datos y publicación
 
-Las escrituras de perfil, vehículo y servicios se ejecutan en una transacción. Los perfiles nacen como borradores. Publicar habilita inmediatamente la URL; retirar la publicación conserva los datos y oculta el perfil y su vCard. La dirección queda fija después de crear el conductor, por lo que una tarjeta NFC puede seguir usando la misma URL.
+Las escrituras de perfil, vehículo y servicios se ejecutan en una transacción. Los perfiles nacen como borradores. Publicar habilita inmediatamente la URL; retirar la publicación conserva los datos y oculta el perfil y su vCard. La dirección pública puede cambiarse por administración. DriverAddress reserva cada dirección al mismo conductor; qrSlug conserva la dirección original para el QR y las tarjetas NFC. La migración registra los perfiles existentes, y los alias se resuelven tanto en el perfil como en vCard, reservas y su API. Los cambios de dirección y sus reservas se guardan en la misma transacción.
 
 Las consultas públicas seleccionan campos explícitos. No incluyen identificadores internos, usuarios, contraseñas ni placas. Sólo muestran servicios y vehículo activos. Los perfiles usan renderizado dinámico para que un retiro de publicación no dependa de la expiración de una caché.
 

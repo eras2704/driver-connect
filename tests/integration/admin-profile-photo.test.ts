@@ -65,7 +65,7 @@ test("administración crea y edita conductores con foto, respeta borradores y gu
     assert.ok(html.includes(`/media/${first.id}`));
     assert.equal((await upload(id, profile, image, driverCookie)).status, 401);
     assert.equal((await upload(id, profile, image, cookie, "https://wrong.test")).status, 403);
-    assert.equal((await upload(id, { ...profile, slug: `${slug}-changed` })).status, 409);
+    assert.equal((await upload(id, { ...profile, slug: other.slug })).status, 409);
     assert.equal((await upload(id, { ...profile, driverId: other.id })).status, 400);
     assert.equal((await upload(id, { ...profile, name: "No debe guardarse", serviceIds: ["missing-ci-service"] })).status, 400);
     assert.equal((await upload("ci-missing-driver")).status, 404);

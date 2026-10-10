@@ -85,9 +85,9 @@ test("administración y perfiles con MySQL y el contenedor de producción", { ti
       assert.equal(editor.status, 200); assert.ok((await editor.text()).includes(privatePlate));
     });
 
-    await t.test("publica campos permitidos y vCard, conserva el slug NFC y permite retirar el perfil", async () => {
+    await t.test("publica campos permitidos y vCard, conserva las direcciones NFC y permite retirar el perfil", async () => {
       const path = `/api/admin/conductores/${driverId}`;
-      assert.equal((await post(path, { ...input, slug: `${slug}-changed` }, cookie, "PATCH")).status, 409);
+      assert.equal((await post(path, { ...input, slug: `${slug}-changed` }, cookie, "PATCH")).status, 200);
       assert.equal((await post(path, { ...input, name: "Should roll back", serviceIds: ["missing-service"] }, cookie, "PATCH")).status, 400);
       assert.equal((await database.driver.findUniqueOrThrow({ where: { id: driverId } })).name, input.name);
       assert.equal((await post(path, { ...input, active: true, verified: true }, cookie, "PATCH")).status, 200);

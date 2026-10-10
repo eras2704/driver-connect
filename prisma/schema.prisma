@@ -11,6 +11,8 @@ datasource db {
 model Driver {
   id          String      @id @default(cuid())
   slug        String      @unique @db.VarChar(191)
+  qrSlug      String?     @db.VarChar(191)
+  addresses   DriverAddress[]
   name        String      @db.VarChar(191)
   phone       String?     @db.VarChar(32)
   whatsapp    String?     @db.VarChar(32)
@@ -31,6 +33,15 @@ model Driver {
   bookings    Booking[]
   photos      DriverPhoto[]
   servicePhotos DriverServicePhoto[]
+}
+
+// Todas las direcciones quedan reservadas al mismo perfil para conservar tarjetas.
+model DriverAddress {
+  slug     String @id @db.VarChar(191)
+  driverId String @db.VarChar(191)
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId])
 }
 
 model Vehicle {
