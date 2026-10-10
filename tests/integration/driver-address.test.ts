@@ -71,14 +71,6 @@ test("cambiar direcciones conserva QR, enlaces anteriores y propiedad exclusiva"
     assert.equal((await database.driver.findUniqueOrThrow({ where: { id: legacy.id } })).qrSlug, legacySlug);
     assert.equal((await database.driverAddress.findUniqueOrThrow({ where: { slug: legacySlug } })).driverId, legacy.id);
     assert.equal((await fetch(`${base}/conductor/${legacySlug}/contacto`)).status, 200);
-    // Fixtures or imports without qrSlug must also preserve their first address.
-    const legacySlug = `${slug}-legacy`;
-    const legacy = await database.driver.create({ data: { slug: legacySlug, name: "Perfil anterior", active: true } });
-    ids.push(legacy.id);
-    assert.equal((await send(`/api/admin/conductores/${legacy.id}`, { ...profile, slug: `${legacySlug}-new` }, "PATCH")).status, 200);
-    assert.equal((await database.driver.findUniqueOrThrow({ where: { id: legacy.id } })).qrSlug, legacySlug);
-    assert.equal((await database.driverAddress.findUniqueOrThrow({ where: { slug: legacySlug } })).driverId, legacy.id);
-    assert.equal((await fetch(`${base}/conductor/${legacySlug}/contacto`)).status, 200);
   } finally {
     await database.booking.deleteMany({ where: { driverId: { in: ids } } });
     await database.driverUser.deleteMany({ where: { driverId: { in: ids } } });
