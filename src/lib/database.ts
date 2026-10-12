@@ -11,6 +11,7 @@ export function createDatabase(databaseUrl = process.env.DATABASE_URL) {
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
     database: decodeURIComponent(url.pathname.slice(1)),
+    ...(process.env.MYSQL_CACHING_RSA_PUBLIC_KEY ? { cachingRsaPublicKey: process.env.MYSQL_CACHING_RSA_PUBLIC_KEY } : {}),
     connectionLimit: 5,
     connectTimeout: 10000,
     acquireTimeout: 10000,
