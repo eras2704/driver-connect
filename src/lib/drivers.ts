@@ -1,3 +1,4 @@
+import { serviceEnd } from "./subscription";
 import "server-only";
 import { db } from "./db";
 import { requireAdmin, requireApiAdmin } from "./admin-session";
@@ -12,7 +13,7 @@ export async function listDrivers(query = "", page = 1) {
   const [total, drivers] = await Promise.all([
     db().driver.count({ where }),
     db().driver.findMany({ where, orderBy: { createdAt: "desc" }, take: 20, skip: (page - 1) * 20,
-      select: { id: true, name: true, slug: true, location: true, active: true, verified: true } }),
+      select: { id: true, name: true, slug: true, location: true, active: true, verified: true, serviceStartsAt: true, serviceExpiresAt: true } }),
   ]);
   return { total, drivers };
 }
@@ -31,13 +32,16 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
   try {
     const saved = await withProfilePhotos(files, input.vehicle, photos => db().$transaction(async (tx) => {
       if (id) await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${id} FOR UPDATE`;
-      const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, qrSlug: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
+      const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, qrSlug: true, active: true, serviceStartsAt: true, serviceExpiresAt: true, serviceRequiresAssignment: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
       if (id && !existing) throw new HttpError(404, "No se encontró el conductor.");
       const owner = await tx.driver.findFirst({ where: driverAddressWhere(input.slug), select: { id: true } });
       if (owner && owner.id !== existing?.id) throw new HttpError(409, "Esta dirección pertenece a otro perfil o a una de sus tarjetas.", { slug: "Elige una dirección diferente." });
       const validServices = await tx.service.count({ where: { id: { in: input.serviceIds }, active: true } });
       if (validServices !== input.serviceIds.length) throw new HttpError(400, "Uno de los servicios ya no está disponible. Actualiza el formulario.");
+      const now = new Date();
+      const activation = input.active && !existing?.serviceRequiresAssignment && !existing?.serviceExpiresAt ? { serviceStartsAt: now, serviceExpiresAt: serviceEnd(now) } : {};
       const data = {
+        ...activation,
         name: input.name, phone: input.phone || null, whatsapp: input.whatsapp || null, email: input.email || null,
         location: input.location || null, experience: input.experience, languages: input.languages,
         description: input.description || null, photoUrl: input.photoUrl || null,

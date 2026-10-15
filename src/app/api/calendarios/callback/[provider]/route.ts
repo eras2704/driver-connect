@@ -1,3 +1,4 @@
+import { serviceAvailable } from "@/lib/subscription";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
@@ -20,7 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
       const consumed = await tx.calendarOAuthState.deleteMany({ where: { stateHash: record.stateHash, browserHash: digest(browser), expiresAt: { gt: new Date() } } });
       if (!consumed.count) throw new Error(); return record;
     });
-    if (stored.driverUserId) { const driver = await currentDriver(); if (driver?.userId !== stored.driverUserId || driver.mustChangePassword) throw new Error(); }
+    if (stored.driverUserId) { const driver = await currentDriver(); if (driver?.userId !== stored.driverUserId || driver.mustChangePassword || !serviceAvailable(driver)) throw new Error(); }
     else if (stored.ownerKey !== `passenger:${stored.bookingId}:${digest(jar.get(VISITOR_COOKIE)?.value || "")}`) throw new Error();
     if (url.searchParams.has("error")) { target = "/calendario/conexion?estado=cancelado"; throw new Error(); }
     const tokens = await exchangeCode(provider, url.searchParams, state, decrypt(stored.verifier, stored.stateHash)), accountHash = digest(`${provider}:${tokens.accountId}`);
@@ -29,7 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
       let returnPath = "/panel/calendario";
       if (stored.driverUserId) {
         await tx.$queryRaw`SELECT id FROM DriverUser WHERE id = ${stored.driverUserId} FOR UPDATE`;
-        const user = await tx.driverUser.findUnique({ where: { id: stored.driverUserId } }); if (!user?.active || user.mustChangePassword || user.accessVersion !== stored.ownerVersion) throw new Error();
+        const user = await tx.driverUser.findUnique({ where: { id: stored.driverUserId }, include: { driver: { select: { serviceStartsAt: true, serviceExpiresAt: true } } } }); if (!user?.active || !serviceAvailable(user.driver) || user.mustChangePassword || user.accessVersion !== stored.ownerVersion) throw new Error();
       } else {
         await tx.$queryRaw`SELECT id FROM Booking WHERE id = ${stored.bookingId} FOR UPDATE`;
         const trip = await tx.booking.findUnique({ where: { id: stored.bookingId! } }); if (!trip || trip.status !== "CONFIRMED" || trip.endsAt <= new Date() || trip.passengerVersion !== stored.ownerVersion) throw new Error(); returnPath = passengerPath(trip);

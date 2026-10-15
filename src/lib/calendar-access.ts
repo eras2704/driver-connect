@@ -1,3 +1,4 @@
+import { serviceAvailable } from "./subscription";
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { db } from "./db";
@@ -15,7 +16,7 @@ export async function passengerBooking(id: string, token: string) {
 }
 export async function calendarDriver(id: string, token: string) {
   if (id.length > 64 || !validTokenFormat(token)) return null;
-  const user = await db().driverUser.findUnique({ where: { id }, select: { id: true, driverId: true, active: true, mustChangePassword: true, calendarEnabled: true, calendarVersion: true } });
-  return user?.active && !user.mustChangePassword && user.calendarEnabled && matches(token, calendarToken("driver", id, user.calendarVersion)) ? user : null;
+  const user = await db().driverUser.findUnique({ where: { id }, select: { id: true, driverId: true, active: true, mustChangePassword: true, calendarEnabled: true, calendarVersion: true, driver: { select: { serviceStartsAt: true, serviceExpiresAt: true } } } });
+  return user?.active && serviceAvailable(user.driver) && !user.mustChangePassword && user.calendarEnabled && matches(token, calendarToken("driver", id, user.calendarVersion)) ? user : null;
 }
 export function feedResponse(body: string) { return new Response(body, { headers: { "Content-Type": "text/calendar; charset=utf-8", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" } }); }
