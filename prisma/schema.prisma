@@ -12,6 +12,10 @@ model Driver {
   id          String      @id @default(cuid())
   slug        String      @unique @db.VarChar(191)
   qrSlug      String?     @db.VarChar(191)
+  serviceStartsAt DateTime?
+  serviceExpiresAt DateTime?
+  serviceRequiresAssignment Boolean @default(false)
+  servicePeriods ServicePeriod[]
   addresses   DriverAddress[]
   name        String      @db.VarChar(191)
   phone       String?     @db.VarChar(32)
@@ -36,6 +40,20 @@ model Driver {
 }
 
 // Todas las direcciones quedan reservadas al mismo perfil para conservar tarjetas.
+model ServicePeriod {
+  id String @id @db.VarChar(36)
+  driverId String
+  adminId String @db.VarChar(191)
+  action String @db.VarChar(16)
+  reference String @db.VarChar(191)
+  previousExpiresAt DateTime?
+  startsAt DateTime
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  @@index([driverId, createdAt])
+}
+
 model DriverAddress {
   slug     String @id @db.VarChar(191)
   driverId String @db.VarChar(191)

@@ -1,3 +1,4 @@
+import { serviceAvailable } from "../subscription";
 import { randomUUID } from "node:crypto";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { decrypt, encrypt } from "./crypto";
@@ -12,8 +13,11 @@ export async function syncNext(database: PrismaClient, transport = calendarTrans
   if (!acquired.count) return true;
   const fence = { id: candidate.id, leaseToken, credentialsVersion: candidate.credentialsVersion, status: "ACTIVE" as const };
   try {
-    const owner = candidate.driverUserId ? await database.driverUser.findUnique({ where: { id: candidate.driverUserId } }) : null;
+    const owner = candidate.driverUserId ? await database.driverUser.findUnique({ where: { id: candidate.driverUserId }, include: { driver: { select: { serviceStartsAt: true, serviceExpiresAt: true } } } }) : null;
     const passenger = candidate.bookingId ? await database.booking.findUnique({ where: { id: candidate.bookingId } }) : null;
+    if (owner && !serviceAvailable(owner.driver)) {
+      await database.calendarConnection.updateMany({ where: fence, data: { nextSyncAt: new Date(Date.now() + 3600_000), lastError: "SERVICE_EXPIRED" } }); return true;
+    }
     const valid = owner ? owner.active && !owner.mustChangePassword && owner.accessVersion === candidate.ownerVersion : passenger && passenger.passengerVersion === candidate.ownerVersion && passenger.endsAt.getTime() > Date.now() - 90 * 86400_000;
     if (!valid || !candidate.refreshToken) { await database.calendarConnection.updateMany({ where: fence, data: disconnected }); return true; }
     const tokens = await transport.refresh(candidate.provider, decrypt(candidate.refreshToken, candidate.id));

@@ -1,3 +1,4 @@
+import { serviceAvailable } from "./subscription";
 import { driverAddressWhere } from "./driver-address";
 import "server-only";
 import { queueBooking } from "./cloud-calendar/queue";
@@ -21,8 +22,8 @@ async function noOverlap(tx: Prisma.TransactionClient, driverId: string, startsA
 }
 export async function requestBooking(slug: string, input: RequestBookingInput) {
   const interval = dates(input.startsAt, 60);
-  const driver = await db().driver.findFirst({ where: driverAddressWhere(slug), select: { id: true, active: true, user: { select: { active: true } }, services: { where: { id: input.serviceId, active: true }, select: { name: true } }, vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1, select: { passengers: true } } } });
-  if (!driver?.active || !driver.user?.active || !driver.services.length) throw new HttpError(404, "Este conductor o servicio no recibe solicitudes en este momento.");
+  const driver = await db().driver.findFirst({ where: driverAddressWhere(slug), select: { id: true, active: true, serviceStartsAt: true, serviceExpiresAt: true, user: { select: { active: true } }, services: { where: { id: input.serviceId, active: true }, select: { name: true } }, vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1, select: { passengers: true } } } });
+  if (!driver?.active || !serviceAvailable(driver) || !driver.user?.active || !driver.services.length) throw new HttpError(404, "Este conductor o servicio no recibe solicitudes en este momento.");
   if (driver.vehicles[0] && input.passengers > driver.vehicles[0].passengers) throw new HttpError(400, "La cantidad de pasajeros supera la capacidad del vehículo.");
   const requestHash = hashToken(`booking:${driver.id}:${input.requestId}`);
   const payloadHash = hashToken(JSON.stringify(input));
