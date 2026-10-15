@@ -106,6 +106,8 @@ Si falla la compilación o migración, no ejecutes el último paso. Para volver 
 
 ## Activar la cuenta del calendario
 
+> Para la instalación con MySQL compartido ccpd-mysql y Compose personalizado, utiliza [la guía de Android y Google Calendar](calendario-android-aws.md) y compose.calendar.shared-db.yaml. El archivo compose.calendar.yaml de esta guía presupone un servicio local db.
+
 Elige primero Google si los teléfonos ya sincronizan una cuenta Google. Microsoft es una alternativa para cuentas Outlook/Microsoft 365. No necesitas instalar una nueva app en el teléfono: el calendario principal de la cuenta elegida debe estar habilitado en su app Calendario. Una agenda local sin cuenta no puede conectarse desde el navegador.
 
 ### Google

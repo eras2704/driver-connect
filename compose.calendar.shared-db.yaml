@@ -1,0 +1,26 @@
+# Para la instalación existente con MySQL compartido y compose.yaml personalizado.
+# No combinar con compose.calendar.yaml: este archivo hereda la conexión real de migrate.
+services:
+  app:
+    environment: &calendar_environment
+      CALENDAR_TOKEN_KEY: ${CALENDAR_TOKEN_KEY:?Configura una clave de cifrado independiente}
+      CALENDAR_GOOGLE_CLIENT_ID: ${CALENDAR_GOOGLE_CLIENT_ID:-}
+      CALENDAR_GOOGLE_CLIENT_SECRET: ${CALENDAR_GOOGLE_CLIENT_SECRET:-}
+      CALENDAR_MICROSOFT_CLIENT_ID: ${CALENDAR_MICROSOFT_CLIENT_ID:-}
+      CALENDAR_MICROSOFT_CLIENT_SECRET: ${CALENDAR_MICROSOFT_CLIENT_SECRET:-}
+
+  calendar-worker:
+    extends:
+      file: compose.yaml
+      service: migrate
+    command: [pnpm, calendar:worker]
+    restart: unless-stopped
+    init: true
+    environment:
+      <<: *calendar_environment
+      APP_ORIGIN: ${APP_ORIGIN:?Define APP_ORIGIN}
+      SESSION_SECRET: ${SESSION_SECRET:?Define SESSION_SECRET}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 60s
