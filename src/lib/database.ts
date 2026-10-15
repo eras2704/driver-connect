@@ -14,6 +14,8 @@ export function createDatabase(databaseUrl = process.env.DATABASE_URL) {
     connectionLimit: 5,
     connectTimeout: 10000,
     acquireTimeout: 10000,
+    // Explicit opt-in for MySQL RSA authentication on a trusted private network.
+    allowPublicKeyRetrieval: url.searchParams.get("allowPublicKeyRetrieval") === "true" || process.env.MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL === "true",
     ...(url.searchParams.get("ssl") === "true" ? { ssl: { rejectUnauthorized: true } } : {}),
   });
   return new PrismaClient({ adapter });

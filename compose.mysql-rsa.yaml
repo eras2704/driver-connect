@@ -1,0 +1,11 @@
+# Opt-in only for the existing trusted private Docker network.
+services:
+  app:
+    environment:
+      MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
+  migrate:
+    environment:
+      MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
+  calendar-worker:
+    environment:
+      MYSQL_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
