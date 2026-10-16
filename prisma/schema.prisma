@@ -16,6 +16,8 @@ model Driver {
   serviceExpiresAt DateTime?
   serviceRequiresAssignment Boolean @default(false)
   servicePeriods ServicePeriod[]
+  customServicesEnabled Boolean @default(false)
+  customServices ProfileService[]
   addresses   DriverAddress[]
   name        String      @db.VarChar(191)
   phone       String?     @db.VarChar(32)
@@ -73,12 +75,28 @@ model Vehicle {
   passengers  Int      @default(4)
   description String?  @db.Text
   photoUrl    String?  @db.Text
+  photoStorageKey String? @unique @db.VarChar(64)
   active      Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   driver      Driver   @relation(fields: [driverId], references: [id], onDelete: Restrict)
 
   @@index([driverId])
+}
+
+model ProfileService {
+  id String @id @default(cuid())
+  driverId String
+  name String @db.VarChar(191)
+  nameEn String? @db.VarChar(191)
+  description String? @db.Text
+  descriptionEn String? @db.Text
+  photoStorageKey String? @unique @db.VarChar(64)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  @@index([driverId, active])
 }
 
 model Service {

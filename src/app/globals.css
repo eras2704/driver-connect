@@ -578,3 +578,9 @@ select, textarea { font: inherit; }
 .profile-qr-url input { width: 100%; min-width: 0; }
 .profile-qr-content .detail-actions { flex-wrap: wrap; }
 @media(max-width:760px) { .profile-qr-card { flex-direction: column; }.profile-qr-preview { flex-basis: auto; width: min(240px,100%); align-self: center; }.profile-qr-content { width: 100%; } }
+
+.public-language-select select { border: 1px solid currentColor; border-radius: 8px; padding: .45rem; background: var(--surface, #102b42); color: inherit; font: inherit; }
+.public-vehicles-grid { display: grid; gap: 1rem; min-width: 0; }
+.public-vehicles-grid article { min-width: 0; }
+.public-vehicles-grid img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 1rem; }
+@media (max-width: 760px) { .public-header nav .public-language-select { display: inline-flex; } }

@@ -61,7 +61,7 @@ test("administración crea y edita conductores con foto, respeta borradores y gu
     const editor = await fetch(`${base}/admin/conductores/${id}/editar`, { headers: { Cookie: cookie } });
     assert.equal(editor.status, 200);
     const html = await editor.text();
-    assert.match(html, /id="vehiclePhoto"[^>]*type="file"/); assert.doesNotMatch(html, /Enlace a la fotografía del vehículo/);
+    assert.match(html, /id="mis-vehiculos"/); assert.match(html, /Agregar vehículo/); assert.doesNotMatch(html, /Enlace a la fotografía del vehículo/);
     assert.ok(html.includes(`/media/${first.id}`));
     assert.equal((await upload(id, profile, image, driverCookie)).status, 401);
     assert.equal((await upload(id, profile, image, cookie, "https://wrong.test")).status, 403);
