@@ -20,6 +20,8 @@ test("cinco servicios propios, varios vehículos, fotos, propiedad y reservas", 
     await database.driverSession.create({ data: { userId: user.id, tokenHash: hashToken(`driver:${driverToken}`), expiresAt: new Date(Date.now() + 3600_000) } });
     const send = (path: string, body: unknown, cookie = driverCookie, method = "POST", requestOrigin = origin) => fetch(`${base}${path}`, { method, headers: { "Content-Type": "application/json", Origin: requestOrigin, Cookie: cookie }, body: JSON.stringify(body) });
     const service = { name: "Traslado privado CI", nameEn: "CI private transfer", description: "Servicio propio", descriptionEn: "Private service" };
+    assert.equal((await send("/api/driver/perfil", { name: "Flota CI", experience: 2, languages: ["Español", "English"], serviceIds: ["airport"], vehicle: null, descriptionEn: "A private driver in Panama" }, driverCookie, "PATCH")).status, 200);
+    assert.equal((await database.driver.findUniqueOrThrow({ where: { id: driver.id } })).descriptionEn, "A private driver in Panama");
     assert.equal((await send("/api/driver/prestaciones", service, "")).status, 401);
     assert.equal((await send("/api/driver/prestaciones", service, driverCookie, "POST", "https://invalid.test")).status, 403);
     const services: string[] = [];
@@ -30,7 +32,7 @@ test("cinco servicios propios, varios vehículos, fotos, propiedad y reservas", 
     const stale = first.updatedAt.toISOString();
     assert.equal((await send("/api/driver/prestaciones", { ...service, id: first.id, updatedAt: stale, name: "Servicio editado CI" })).status, 200);
     assert.equal((await send("/api/driver/prestaciones", { ...service, id: first.id, updatedAt: stale })).status, 409);
-    const vehicle = { brand: "Toyota CI", model: "Flota", year: 2024, passengers: 4, plate: `PRIVATE-${suffix}`, color: "Azul", description: "Flota propia", photoUrl: "" };
+    const vehicle = { brand: "Toyota CI", model: "Flota", year: 2024, passengers: 4, plate: `PRIVATE-${suffix}`, color: "Azul", colorEn: "Blue", description: "Flota propia", descriptionEn: "Private fleet", photoUrl: "" };
     const vehicleIds: string[] = [];
     for (let i = 0; i < 10; i++) { const response = await send("/api/driver/vehiculos", { ...vehicle, model: `Modelo CI ${i}`, passengers: i === 2 ? 8 : 4 }); assert.equal(response.status, 200); vehicleIds.push((await response.json()).id); }
     assert.equal((await send("/api/driver/vehiculos", vehicle)).status, 409);

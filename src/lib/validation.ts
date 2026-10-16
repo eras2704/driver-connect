@@ -22,6 +22,7 @@ export const driverSchema = z.object({
   experience: z.number().int().min(0).max(70),
   languages: z.array(z.string().trim().min(1).max(40)).max(10),
   description: optionalText(3000),
+  descriptionEn: optionalText(3000),
   photoUrl: photo,
   active: z.boolean(),
   verified: z.boolean(),
@@ -31,8 +32,10 @@ export const driverSchema = z.object({
     model: z.string().trim().min(1).max(100),
     year: z.number().int().min(1980).max(new Date().getFullYear() + 1),
     color: optionalText(64), plate: optionalText(32),
+    colorEn: optionalText(64),
     passengers: z.number().int().min(1).max(50),
     description: optionalText(1000), photoUrl: photo,
+    descriptionEn: optionalText(1000),
   }).strict().nullable(),
 }).strict();
 

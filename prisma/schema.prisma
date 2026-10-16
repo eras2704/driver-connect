@@ -27,6 +27,7 @@ model Driver {
   experience  Int         @default(0)
   languages   Json?
   description String?     @db.Text
+  descriptionEn String?   @db.Text
   photoUrl    String?     @db.Text
   portraitStorageKey String? @unique @db.VarChar(64)
   verified    Boolean     @default(false)
@@ -71,9 +72,11 @@ model Vehicle {
   model       String   @db.VarChar(100)
   year        Int
   color       String?  @db.VarChar(64)
+  colorEn     String?  @db.VarChar(64)
   plate       String?  @db.VarChar(32)
   passengers  Int      @default(4)
   description String?  @db.Text
+  descriptionEn String? @db.Text
   photoUrl    String?  @db.Text
   photoStorageKey String? @unique @db.VarChar(64)
   active      Boolean  @default(false)

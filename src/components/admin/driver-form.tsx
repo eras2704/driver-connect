@@ -22,14 +22,14 @@ export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, drive
     const text = (key: string) => String(form.get(key) || "");
     const payload = {
       name: text("name"), slug: text("slug"), phone: text("phone"), whatsapp: text("whatsapp"), email: text("email"),
-      location: text("location"), experience: Number(text("experience")), description: text("description"), photoUrl: text("photoUrl"),
+      location: text("location"), experience: Number(text("experience")), description: text("description"), descriptionEn: text("descriptionEn"), photoUrl: text("photoUrl"),
       languages: text("languages").split(",").map((value) => value.trim()).filter(Boolean),
       active: form.get("active") === "on", verified: form.get("verified") === "on", serviceIds: initial?.serviceIds || [],
-      vehicle: id ? initial?.vehicle ?? null : vehicleEnabled ? { brand: text("vehicle.brand"), model: text("vehicle.model"), year: Number(text("vehicle.year")), color: text("vehicle.color"), plate: text("vehicle.plate"), passengers: Number(text("vehicle.passengers")), description: text("vehicle.description"), photoUrl: text("vehicle.photoUrl") } : null,
+      vehicle: id ? initial?.vehicle ?? null : vehicleEnabled ? { brand: text("vehicle.brand"), model: text("vehicle.model"), year: Number(text("vehicle.year")), color: text("vehicle.color"), colorEn: text("vehicle.colorEn"), plate: text("vehicle.plate"), passengers: Number(text("vehicle.passengers")), description: text("vehicle.description"), descriptionEn: text("vehicle.descriptionEn"), photoUrl: text("vehicle.photoUrl") } : null,
     };
     setPending(true); setError(""); setErrors({});
     try {
-      const ownProfile = { name: payload.name, phone: payload.phone, whatsapp: payload.whatsapp, email: payload.email, location: payload.location, experience: payload.experience, description: payload.description, photoUrl: payload.photoUrl, languages: payload.languages, serviceIds: payload.serviceIds, vehicle: payload.vehicle };
+      const ownProfile = { name: payload.name, phone: payload.phone, whatsapp: payload.whatsapp, email: payload.email, location: payload.location, experience: payload.experience, description: payload.description, descriptionEn: payload.descriptionEn, photoUrl: payload.photoUrl, languages: payload.languages, serviceIds: payload.serviceIds, vehicle: payload.vehicle };
       const body = mode === "driver" ? ownProfile : payload;
       const upload = driverPhoto || vehicleEnabled && vehiclePhoto ? new FormData() : null;
       if (upload) {
@@ -61,6 +61,7 @@ export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, drive
       {field("languages", "Idiomas", initial?.languages.join(", ") || "", "text", false, "Separa los idiomas con comas.", 400)}
       <input type="hidden" name="photoUrl" value={initial?.photoUrl || ""} /><ProfilePhotoInput kind="driver" currentUrl={driverPortraitUrl || initial?.photoUrl} disabled={pending} error={errors.driverPhoto} onChange={setDriverPhoto} mode={mode} />
       <label className="full-width" htmlFor="description">Presentación<textarea id="description" name="description" rows={5} maxLength={3000} defaultValue={initial?.description} />{errors.description && <small className="field-error">{errors.description}</small>}</label>
+      <label className="full-width">Presentación en inglés (opcional)<textarea name="descriptionEn" rows={4} maxLength={3000} defaultValue={initial?.descriptionEn} /></label>
     </div></section>
     <section className="admin-card"><span className="eyebrow">02 / CONTACTO</span><h2>Canales públicos</h2><p className="form-help">Estos datos aparecerán en el perfil al publicarlo. Deja vacíos los canales que no quieras mostrar.</p><div className="form-grid">{field("phone", "Teléfono", initial?.phone, "tel", false, "Incluye el código de país: +507 6000 0000.", 32)}{field("whatsapp", "WhatsApp", initial?.whatsapp, "tel", false, "Incluye el código de país.", 32)}{field("email", "Correo electrónico", initial?.email, "email")}</div></section>
     <section className="admin-card"><span className="eyebrow">03 / SERVICIOS</span><h2>Hasta cinco servicios propios</h2><p>{id ? "Edita tus servicios en la sección Mis servicios, debajo de este formulario." : "Guarda el perfil para escribir y editar hasta cinco servicios propios."}</p>{id && <a className="text-link" href="#mis-servicios">Gestionar mis servicios ↓</a>}</section>

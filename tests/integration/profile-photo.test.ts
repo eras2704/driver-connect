@@ -62,7 +62,7 @@ test("la foto del vehículo se sube desde el perfil y se guarda junto con sus da
     assert.match(html, new RegExp(`class="public-vehicle-image"[^>]*><img[^>]+src="/media/${photos[0].id}"`));
     const formHtml = await (await fetch(`${base}/panel/perfil`, { headers: { Cookie: a.cookie } })).text();
     assert.match(formHtml, /id="mis-vehiculos"/);
-    assert.match(formHtml, /Agregar vehículo/);
+    assert.match(formHtml, /Agregar(?:\s|<!--.*?-->)*vehículo/);
     assert.doesNotMatch(formHtml, /Enlace a la fotografía del vehículo/);
     assert.ok(formHtml.includes(`/media/${photos[0].id}`));
     assert.equal((await save(profile)).status, 200);

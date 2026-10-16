@@ -44,7 +44,7 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
         ...activation,
         name: input.name, phone: input.phone || null, whatsapp: input.whatsapp || null, email: input.email || null,
         location: input.location || null, experience: input.experience, languages: input.languages,
-        description: input.description || null, photoUrl: input.photoUrl || null,
+        description: input.description || null, descriptionEn: input.descriptionEn || null, photoUrl: input.photoUrl || null,
         active: input.active, verified: input.verified,
       };
       const driver = id

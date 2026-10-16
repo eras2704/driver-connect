@@ -584,3 +584,4 @@ select, textarea { font: inherit; }
 .public-vehicles-grid article { min-width: 0; }
 .public-vehicles-grid img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 1rem; }
 @media (max-width: 760px) { .public-header nav .public-language-select { display: inline-flex; } }
+@media (max-width: 480px) { .public-header { gap: .75rem; } .public-header nav { gap: .65rem; } .public-header .professional-access { white-space: nowrap; } }

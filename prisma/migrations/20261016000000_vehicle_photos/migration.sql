@@ -1,4 +1,6 @@
 ALTER TABLE `Vehicle` ADD COLUMN `photoStorageKey` VARCHAR(64) NULL;
+ALTER TABLE `Vehicle` ADD COLUMN `colorEn` VARCHAR(64) NULL, ADD COLUMN `descriptionEn` TEXT NULL;
+ALTER TABLE `Driver` ADD COLUMN `descriptionEn` TEXT NULL;
 CREATE UNIQUE INDEX `Vehicle_photoStorageKey_key` ON `Vehicle` (`photoStorageKey`);
 ALTER TABLE `Driver` ADD COLUMN `customServicesEnabled` BOOLEAN NOT NULL DEFAULT false;
 CREATE TABLE `ProfileService` (

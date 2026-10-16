@@ -18,7 +18,7 @@ export async function PATCH(request: Request) {
       await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${actor.driverId} FOR UPDATE`;
       if (await tx.service.count({ where: { id: { in: input.serviceIds }, active: true } }) !== input.serviceIds.length) throw new HttpError(400, "Uno de los servicios no está disponible.");
       await addVehiclePhoto(tx, actor.driverId, photos.vehicle);
-      await tx.driver.update({ where: { id: actor.driverId }, data: { name: input.name, phone: input.phone || null, whatsapp: input.whatsapp || null, email: input.email || null, location: input.location || null, experience: input.experience, description: input.description || null, photoUrl: input.photoUrl || null, languages: input.languages, services: { set: input.serviceIds.map(id => ({ id })) } } });
+      await tx.driver.update({ where: { id: actor.driverId }, data: { name: input.name, phone: input.phone || null, whatsapp: input.whatsapp || null, email: input.email || null, location: input.location || null, experience: input.experience, description: input.description || null, descriptionEn: input.descriptionEn || null, photoUrl: input.photoUrl || null, languages: input.languages, services: { set: input.serviceIds.map(id => ({ id })) } } });
       const existing = await tx.vehicle.findFirst({ where: { driverId: actor.driverId }, orderBy: [{ active: "desc" }, { createdAt: "asc" }], select: { id: true } });
       if (input.vehicle) {
         if (existing) await tx.vehicle.update({ where: { id: existing.id }, data: { ...input.vehicle, active: true } });

@@ -5,9 +5,10 @@ let sessionLanguage: PublicLanguage | undefined;
 export type PublicLanguage = "es" | "en";
 function read(): PublicLanguage { if (sessionLanguage) return sessionLanguage; try { return localStorage.getItem(KEY) === "en" ? "en" : "es"; } catch { return "es"; } }
 function subscribe(callback: () => void) { window.addEventListener(EVENT, callback); window.addEventListener("storage", callback); return () => { window.removeEventListener(EVENT, callback); window.removeEventListener("storage", callback); }; }
-export function usePublicLanguage() {
-  const language = useSyncExternalStore(subscribe, read, () => "es" as PublicLanguage);
-  useEffect(() => { const previous = document.documentElement.lang; document.documentElement.lang = language; return () => { document.documentElement.lang = previous; }; }, [language]);
+export function usePublicLanguage(enabled = true, updateDocument = true) {
+  const stored = useSyncExternalStore(subscribe, read, () => "es" as PublicLanguage);
+  const language = enabled ? stored : "es";
+  useEffect(() => { if (!enabled || !updateDocument) return; const previous = document.documentElement.lang; document.documentElement.lang = language; return () => { document.documentElement.lang = previous; }; }, [language, enabled, updateDocument]);
   return { language, t: (spanish: string, english: string) => language === "en" ? english : spanish };
 }
 export function PublicLanguageSelect({ language }: { language: PublicLanguage }) {
