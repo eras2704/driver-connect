@@ -22,9 +22,10 @@ async function noOverlap(tx: Prisma.TransactionClient, driverId: string, startsA
 }
 export async function requestBooking(slug: string, input: RequestBookingInput) {
   const interval = dates(input.startsAt, 60);
-  const driver = await db().driver.findFirst({ where: driverAddressWhere(slug), select: { id: true, active: true, serviceStartsAt: true, serviceExpiresAt: true, user: { select: { active: true } }, services: { where: { id: input.serviceId, active: true }, select: { name: true } }, vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1, select: { passengers: true } } } });
-  if (!driver?.active || !serviceAvailable(driver) || !driver.user?.active || !driver.services.length) throw new HttpError(404, "Este conductor o servicio no recibe solicitudes en este momento.");
-  if (driver.vehicles[0] && input.passengers > driver.vehicles[0].passengers) throw new HttpError(400, "La cantidad de pasajeros supera la capacidad del vehículo.");
+  const driver = await db().driver.findFirst({ where: driverAddressWhere(slug), select: { id: true, customServicesEnabled: true, customServices: { where: { id: input.serviceId, active: true }, select: { name: true } }, active: true, serviceStartsAt: true, serviceExpiresAt: true, user: { select: { active: true } }, services: { where: { id: input.serviceId, active: true }, select: { name: true } }, vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 10, select: { passengers: true } } } });
+  const selected = driver?.customServicesEnabled ? driver.customServices : driver?.services;
+  if (!driver?.active || !serviceAvailable(driver) || !driver.user?.active || !selected?.length) throw new HttpError(404, "Este conductor o servicio no recibe solicitudes en este momento.");
+  if (driver.vehicles[0] && input.passengers > Math.max(...driver.vehicles.map(v => v.passengers))) throw new HttpError(400, "La cantidad de pasajeros supera la capacidad del vehículo.");
   const requestHash = hashToken(`booking:${driver.id}:${input.requestId}`);
   const payloadHash = hashToken(JSON.stringify(input));
   const previous = await db().booking.findUnique({ where: { requestHash } });
@@ -34,7 +35,7 @@ export async function requestBooking(slug: string, input: RequestBookingInput) {
   }
   await limitRequests("booking", [{ value: "all", limit: 200 }, { value: driver.id, limit: 30 }, { value: `${driver.id}:${input.phone}`, limit: 3 }]);
   try {
-    const booking = await db().booking.create({ data: { driverId: driver.id, serviceName: driver.services[0].name, customerName: input.customerName, phone: input.phone, email: input.email || null, pickup: input.pickup, destination: input.destination, notes: input.notes || null, passengers: input.passengers, ...interval, requestHash, payloadHash } });
+    const booking = await db().booking.create({ data: { driverId: driver.id, serviceName: selected[0].name, customerName: input.customerName, phone: input.phone, email: input.email || null, pickup: input.pickup, destination: input.destination, notes: input.notes || null, passengers: input.passengers, ...interval, requestHash, payloadHash } });
     return { path: passengerPath(booking) };
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "P2002") {

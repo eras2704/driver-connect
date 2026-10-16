@@ -21,7 +21,7 @@ export async function listDrivers(query = "", page = 1) {
 export async function editorData(id?: string) {
   await requireAdmin();
   const [driver, services] = await Promise.all([
-    id ? db().driver.findUnique({ where: { id }, include: { servicePhotos: { select: { serviceId: true, storageKey: true } }, photos: { where: { category: "VEHICLE" }, orderBy: [{ position: "asc" }, { id: "asc" }], take: 1, select: { id: true } }, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1 }, services: { select: { id: true } } } }) : null,
+    id ? db().driver.findUnique({ where: { id }, include: { servicePhotos: { select: { serviceId: true, storageKey: true } }, photos: { where: { category: "VEHICLE" }, orderBy: [{ position: "asc" }, { id: "asc" }], take: 1, select: { id: true } }, customServices: { where: { active: true }, orderBy: { createdAt: "asc" } }, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 10 }, services: { select: { id: true } } } }) : null,
     db().service.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
   return { driver, services };
@@ -44,7 +44,7 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
         ...activation,
         name: input.name, phone: input.phone || null, whatsapp: input.whatsapp || null, email: input.email || null,
         location: input.location || null, experience: input.experience, languages: input.languages,
-        description: input.description || null, photoUrl: input.photoUrl || null,
+        description: input.description || null, descriptionEn: input.descriptionEn || null, photoUrl: input.photoUrl || null,
         active: input.active, verified: input.verified,
       };
       const driver = id

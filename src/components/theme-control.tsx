@@ -1,5 +1,7 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
+import { usePublicLanguage } from "./public-language";
 
 const KEY = "dc-appearance";
 type Theme = "system" | "light" | "dark";
@@ -17,6 +19,7 @@ function subscribe(callback: () => void) {
   return () => { query.removeEventListener("change", update); window.removeEventListener("storage", update); window.removeEventListener("dc-theme", update); };
 }
 export function ThemeControl() {
+  const { t } = usePublicLanguage(usePathname().startsWith("/conductor/"), false);
   const selected = useSyncExternalStore(subscribe, preference, () => "system" as Theme);
-  return <div className="appearance-bar"><label htmlFor="dc-theme">Apariencia</label><select id="dc-theme" value={selected} onChange={event => { sessionPreference = event.target.value as Theme; try { localStorage.setItem(KEY, event.target.value); } catch { /* La preferencia sigue disponible para esta visita. */ } document.documentElement.dataset.theme = event.target.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : event.target.value; window.dispatchEvent(new Event("dc-theme")); }}><option value="system">Según mi dispositivo</option><option value="light">Claro · Plata azul</option><option value="dark">Oscuro · Azul noche</option></select></div>;
+  return <div className="appearance-bar"><label htmlFor="dc-theme">{t("Apariencia", "Appearance")}</label><select id="dc-theme" value={selected} onChange={event => { sessionPreference = event.target.value as Theme; try { localStorage.setItem(KEY, event.target.value); } catch { /* La preferencia sigue disponible para esta visita. */ } document.documentElement.dataset.theme = event.target.value === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : event.target.value; window.dispatchEvent(new Event("dc-theme")); }}><option value="system">{t("Según mi dispositivo", "Use device settings")}</option><option value="light">{t("Claro · Plata azul", "Light · Blue silver")}</option><option value="dark">{t("Oscuro · Azul noche", "Dark · Midnight blue")}</option></select></div>;
 }
