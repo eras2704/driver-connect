@@ -27,6 +27,14 @@ test("vigencia, suspensión, renovación idempotente y QR permanente", { timeout
     const user = await database.driverUser.create({ data: { driverId: driver.id, username: `ci-service-driver-${suffix}`, passwordHash: "unused", active: true, mustChangePassword: false } });
     await database.driverSession.create({ data: { userId: user.id, tokenHash: hashToken(`driver:${driverToken}`), expiresAt: new Date(Date.now() + 3600_000) } });
     const headers = { Cookie: `dc_driver_session=${driverToken}` };
+    await database.driver.update({ where: { id: driver.id }, data: { serviceStartsAt: null, serviceExpiresAt: null } });
+    assert.doesNotMatch(await (await fetch(`${base}/panel/fotos`, { headers })).text(), /aria-label="Vigencia del servicio"/);
+    await database.driver.update({ where: { id: driver.id }, data: { serviceExpiresAt: new Date(Date.now() + 31 * 86400_000) } });
+    assert.doesNotMatch(await (await fetch(`${base}/panel/fotos`, { headers })).text(), /aria-label="Vigencia del servicio"/);
+    await database.driver.update({ where: { id: driver.id }, data: { serviceExpiresAt: new Date(Date.now() + 29 * 86400_000) } });
+    assert.match(await (await fetch(`${base}/panel/fotos`, { headers })).text(), /aria-label="Vigencia del servicio"/);
+    await database.driver.update({ where: { id: driver.id }, data: { serviceExpiresAt: new Date("2020-12-31T05:00:00Z") } });
+
     assert.equal((await fetch(`${base}/panel`, { headers, redirect: "manual" })).headers.get("location"), "/servicio-vencido");
     assert.equal((await fetch(`${base}/api/calendarios`, { method: "POST", headers: { ...headers, Origin: origin, "Content-Type": "application/json" }, body: JSON.stringify({ action: "status", audience: { kind: "driver" } }) })).status, 403);
     const renewal = { action: "renew", requestId: randomUUID(), reference: "Pago CI 1", paymentConfirmed: true };

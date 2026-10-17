@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 
 const paths: Record<string, ReactNode> = {
+  car: <><path d="m5 10 2-6h10l2 6M3 10h18v8H3zM5 18v3m14-3v3M6 14h2m8 0h2" /></>,
+  edit: <><path d="m15 4 5 5M4 20l5-1L21 7l-5-5L4 14v6Z" /></>,
+  trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" /></>,
+  plus: <path d="M12 5v14M5 12h14" />,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18M7 15h2m3 0h2m3 0h1M7 18h2" /></>,
   grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
   shield: <><path d="m12 3 8 4v6c0 4-8 8-8 8s-8-4-8-8V7l8-4Z" /><path d="m8 12 3 3 5-5" /></>,

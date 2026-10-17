@@ -585,3 +585,73 @@ select, textarea { font: inherit; }
 .public-vehicles-grid img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 1rem; }
 @media (max-width: 760px) { .public-header nav .public-language-select { display: inline-flex; } }
 @media (max-width: 480px) { .public-header { gap: .75rem; } .public-header nav { gap: .65rem; } .public-header .professional-access { white-space: nowrap; } }
+/* Servicios y vehículos: una misma colección, con edición independiente. */
+.profile-collection { margin-top: 1.5rem; padding: 0; overflow: hidden; border-radius: 1rem; scroll-margin-top: 2rem; }
+.collection-heading { display: flex; align-items: center; gap: 1rem; padding: 1.6rem 1.8rem; border-bottom: 1px solid var(--line); }
+.collection-symbol { display: grid; place-items: center; flex: 0 0 48px; height: 48px; border: 1px solid var(--line); background: var(--field); color: var(--accent); border-radius: .85rem; }
+.collection-symbol svg { width: 24px; height: 24px; }
+.collection-heading > div { flex: 1; min-width: 0; }
+.collection-heading h2 { font-size: 1.8rem; }
+.collection-heading p { margin-top: .5rem; color: var(--muted); font-size: .875rem; line-height: 1.65; }
+.collection-count { flex-shrink: 0; align-self: flex-start; padding: .45rem .75rem; border: 1px solid var(--line); border-radius: 2rem; color: var(--accent); font-size: .8rem; white-space: nowrap; }
+.collection-note { margin: 1rem 1.8rem; color: var(--muted); font-size: .875rem; line-height: 1.7; }
+.collection-list { list-style: none; padding: 0 1.8rem; margin: 0; }
+.collection-item { display: flex; align-items: center; gap: 1.2rem; padding: 1.4rem 0; border-bottom: 1px solid var(--line); }
+.collection-item.is-editing .collection-copy h3 { color: var(--accent); }
+.collection-thumbnail { display: grid; place-items: center; width: 88px; height: 72px; flex-shrink: 0; border-radius: .65rem; overflow: hidden; background: var(--field); border: 1px solid var(--line); color: var(--accent); }
+.collection-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
+.collection-thumbnail > svg { width: 30px; height: 30px; }
+.collection-copy { min-width: 0; flex: 1; }
+.collection-kicker { display: block; color: var(--accent); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; line-height: 1.5; }
+.collection-copy h3 { font-size: 1.35rem; line-height: 1.3; margin: .3rem 0; overflow-wrap: anywhere; }
+.collection-copy p { color: var(--muted); font-size: .875rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.collection-actions { display: flex; align-items: center; gap: .7rem; flex-shrink: 0; }
+.profile-collection .button { display: inline-flex; justify-content: center; align-items: center; gap: .5rem; min-height: 44px; font-size: .875rem; }
+.collection-actions .button { padding: .65rem .9rem; }
+.collection-remove { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px; padding: .6rem; border: 0; background: transparent; color: var(--danger); font: inherit; font-size: .8rem; cursor: pointer; }
+.collection-remove:hover { background: var(--danger-surface); border-radius: .5rem; }
+.collection-remove:disabled { opacity: .5; cursor: default; }
+.collection-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1.3rem 1.8rem; }
+.collection-footer small { color: var(--muted); font-size: .8rem; }
+.collection-empty { text-align: center; padding: 2.5rem 1.8rem 1rem; }
+.collection-empty > svg { color: var(--accent); width: 32px; height: 32px; margin-bottom: .8rem; }
+.collection-empty h3 { font: 1.5rem/1.4 Georgia,serif; }
+.collection-empty p { color: var(--muted); font-size: .875rem; line-height: 1.7; margin-top: .5rem; }
+.profile-item-editor { margin: 1.5rem; padding: 1.5rem; background: var(--field); border: 1px solid var(--control-line); border-radius: .8rem; }
+.profile-item-editor > header { margin-bottom: 1.5rem; }
+.profile-item-editor > header h3 { font: 1.7rem/1.3 Georgia,serif; margin-top: .35rem; }
+.profile-item-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.profile-item-editor label { display: flex; flex-direction: column; gap: .6rem; font-size: .875rem; font-weight: 600; min-width: 0; }
+.profile-item-editor input:not([type=checkbox]), .profile-item-editor textarea { width: 100%; min-width: 0; border: 1px solid var(--control-line); border-radius: .5rem; padding: .85rem 1rem; background: var(--panel); color: var(--ink); font: inherit; font-size: 1rem; font-weight: 400; }
+.profile-item-editor textarea { resize: vertical; min-height: 100px; }
+.profile-item-editor .checkbox-label { flex-direction: row; align-items: flex-start; font-weight: 400; line-height: 1.6; }
+.profile-item-editor .checkbox-label input { flex-shrink: 0; width: 18px; height: 18px; margin-top: .2rem; }
+.collection-translations { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .25rem 0; }
+.collection-translations summary { display: flex; gap: .65rem; align-items: center; padding: .8rem 0; min-height: 44px; cursor: pointer; font-size: .875rem; color: var(--accent); }
+.collection-translations summary::after { content: "+"; margin-left: auto; font-size: 1.2rem; }
+.collection-translations[open] summary::after { content: "−"; }
+.collection-translations summary span { color: var(--muted); font-size: .75rem; }
+.collection-translations > .form-grid { padding: .5rem 0 1.25rem; }
+.profile-item-editor .vehicle-photo-input { background: transparent; padding: 1rem; }
+.profile-item-editor .vehicle-photo-preview { max-width: 240px; }
+.profile-item-editor .vehicle-photo-preview img { max-height: 150px; }
+.profile-item-editor .vehicle-photo-input input[type=file] { padding: .65rem; font-size: .875rem; }
+.collection-editor-actions { display: flex; flex-wrap: wrap; gap: .75rem; padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid var(--line); }
+.collection-feedback { margin: 0 1.8rem 1.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: .5rem; line-height: 1.6; font-size: .875rem; }
+.service-renewal-notice { padding: .9rem 1.2rem; margin-bottom: 1.5rem; border-left: 3px solid var(--warning); border-radius: .4rem; background: var(--warning-surface); color: var(--warning); font-size: .875rem; line-height: 1.7; }
+@media(max-width:760px) {
+  .collection-heading { padding: 1.3rem; gap: .75rem; flex-wrap: wrap; }
+  .collection-heading > div { flex-basis: calc(100% - 72px); }
+  .collection-count { margin-left: 60px; margin-top: -.3rem; }
+  .collection-heading h2 { font-size: 1.6rem; }
+  .collection-list { padding: 0 1.3rem; }
+  .collection-item { flex-wrap: wrap; gap: .9rem; }
+  .collection-thumbnail { width: 72px; height: 66px; }
+  .collection-copy { flex-basis: calc(100% - 90px); }
+  .collection-actions { width: 100%; justify-content: flex-end; }
+  .collection-footer { padding: 1.3rem; }
+  .collection-note { margin: 1rem 1.3rem; }
+  .profile-item-editor { margin: 1rem; padding: 1rem; }
+  .profile-item-editor .vehicle-photo-input { padding: .8rem; }
+  .collection-editor-actions .button { flex: 1; }
+}
