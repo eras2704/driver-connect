@@ -1,0 +1,22 @@
+# Use alongside the active Compose files after exporting the verified MySQL public key.
+services:
+  app:
+    environment:
+      MYSQL_CACHING_RSA_PUBLIC_KEY: /run/mysql-public-key.pem
+    volumes:
+      - ./deploy/mysql-public-key.pem:/run/mysql-public-key.pem:ro
+  migrate:
+    environment:
+      MYSQL_CACHING_RSA_PUBLIC_KEY: /run/mysql-public-key.pem
+    volumes:
+      - ./deploy/mysql-public-key.pem:/run/mysql-public-key.pem:ro
+  admin-create:
+    environment:
+      MYSQL_CACHING_RSA_PUBLIC_KEY: /run/mysql-public-key.pem
+    volumes:
+      - ./deploy/mysql-public-key.pem:/run/mysql-public-key.pem:ro
+  test:
+    environment:
+      MYSQL_CACHING_RSA_PUBLIC_KEY: /run/mysql-public-key.pem
+    volumes:
+      - ./deploy/mysql-public-key.pem:/run/mysql-public-key.pem:ro
