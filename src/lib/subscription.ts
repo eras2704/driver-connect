@@ -6,5 +6,5 @@ export function serviceAvailable(service: { serviceStartsAt?: Date | null; servi
   return (!service.serviceStartsAt || service.serviceStartsAt <= now) && (!service.serviceExpiresAt || service.serviceExpiresAt > now);
 }
 export function renewalEnd(expires: Date | null, now = new Date()) { return serviceEnd(expires && expires > now ? expires : now); }
-export function serviceExpiringSoon(expires: Date, now = new Date()) { return expires.getTime() - now.getTime() <= 30 * DAY; }
+export function serviceExpiringSoon(expires: Date, now = new Date()) { const remaining = expires.getTime() - now.getTime(); return remaining > 0 && remaining <= 30 * DAY; }
 export function serviceDate(date: Date) { return new Intl.DateTimeFormat("es-PA", { timeZone: "America/Panama", dateStyle: "long" }).format(date); }
