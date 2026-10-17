@@ -1,6 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { PasswordField } from "@/components/password-field";
 
 export function LoginForm({ audience = "admin" }: { audience?: "admin" | "driver" }) {
   const router = useRouter();
@@ -20,7 +21,7 @@ export function LoginForm({ audience = "admin" }: { audience?: "admin" | "driver
   }
   return <form onSubmit={submit} className="admin-form">
     <label htmlFor="username">Usuario<input id="username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required maxLength={64} /></label>
-    <label htmlFor="password">Contraseña<input id="password" name="password" type="password" autoComplete="current-password" required maxLength={200} /></label>
+    <PasswordField label="Contraseña" id="password" name="password" autoComplete="current-password" required maxLength={200} disabled={pending} />
     {error && <p className="form-error" role="alert">{error}</p>}
     <button type="submit" className="button button-primary" disabled={pending}>{pending ? "Entrando…" : audience === "admin" ? "Entrar a administración" : "Entrar a mi espacio"}</button>
   </form>;

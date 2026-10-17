@@ -655,3 +655,13 @@ select, textarea { font: inherit; }
   .profile-item-editor .vehicle-photo-input { padding: .8rem; }
   .collection-editor-actions .button { flex: 1; }
 }
+
+/* Control de contraseña compartido: icono discreto, área táctil cómoda. */
+.password-field { display: grid; gap: .6rem; min-width: 0; }
+.password-control { position: relative; min-width: 0; }
+.password-control input { width: 100%; padding-right: 3.5rem; }
+.password-toggle { position: absolute; right: .3rem; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: .4rem; color: var(--muted); background: transparent; cursor: pointer; transition: color .15s, background .15s; }
+.password-toggle:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.password-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.password-toggle:disabled { opacity: .5; cursor: default; }
+.password-control input::-ms-reveal { display: none; }
