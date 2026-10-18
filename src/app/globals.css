@@ -665,3 +665,7 @@ select, textarea { font: inherit; }
 .password-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .password-toggle:disabled { opacity: .5; cursor: default; }
 .password-control input::-ms-reveal { display: none; }
+
+/* El botón de compartir conserva contraste en la tarjeta azul, incluso en tema claro. */
+.reservation-intro .share-control .button { background: var(--metal-action); color: var(--on-accent); border-color: var(--accent); }
+.reservation-intro .share-control .button:hover { background: var(--metal-action); filter: brightness(1.06); }
