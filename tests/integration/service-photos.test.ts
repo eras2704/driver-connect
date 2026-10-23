@@ -9,7 +9,7 @@ import { servicePhotoUrl } from "../../src/lib/service-photo-url";
 if (process.env.ALLOW_INTEGRATION_TESTS !== "1" || !process.env.ADMIN_USERNAME?.startsWith("ci-") || !process.env.TEST_BASE_URL) throw new Error("Requiere una base desechable CI.");
 const database = createDatabase(), base = process.env.TEST_BASE_URL, origin = process.env.APP_ORIGIN!;
 
-test("fotos de servicios propias, administración y una sola acción de reserva", { timeout: 120_000 }, async () => {
+test("fotos de servicios propias, administración y reservas en portada y barra móvil", { timeout: 120_000 }, async () => {
   const suffix = randomBytes(5).toString("hex"), fixtures: { id: string; slug: string; cookie: string }[] = [];
   let adminId: string | undefined, serviceId: string | undefined;
   try {
@@ -70,7 +70,7 @@ test("fotos de servicios propias, administración y una sola acción de reserva"
     await database.driver.update({ where: { id: a.id }, data: { active: true } });
     const html = await (await fetch(`${base}/conductor/${a.slug}`)).text();
     assert.ok(html.includes(servicePhotoUrl(second.storageKey)!)); assert.ok(!html.includes(servicePhotoUrl(other.storageKey)!));
-    assert.equal((html.match(new RegExp(`href="/conductor/${a.slug}/reservar(?:\\?|\")`, "g")) || []).length, 1);
+    assert.equal((html.match(new RegExp(`href="/conductor/${a.slug}/reservar(?:\\?|\")`, "g")) || []).length, 2); // Portada y barra móvil; no se duplica por cada servicio.
     assert.doesNotMatch(html, /Solicitar este servicio|Solicitar mi traslado/);
     assert.equal((await fetch(`${base}/conductor/${a.slug}/reservar`)).status, 200);
     assert.equal((await media(second.storageKey)).status, 200);
