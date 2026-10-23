@@ -6,7 +6,7 @@ type Snapshot = { version: 1; targets: Record<string, string>; qr: Record<string
 const database = createDatabase();
 try {
   const drivers = await database.driver.findMany({ select: { id: true, slug: true, qrSlug: true, addresses: { select: { slug: true } } } });
-  const snapshot: Snapshot = { version: 1, targets: {}, qr: {} };
+  const snapshot: Snapshot = { version: 1, targets: Object.create(null) as Record<string, string>, qr: Object.create(null) as Record<string, string> };
   for (const driver of drivers) {
     snapshot.qr[driver.id] = driver.qrSlug || driver.slug;
     for (const slug of new Set([driver.slug, driver.qrSlug || driver.slug, ...driver.addresses.map(a => a.slug)])) {
