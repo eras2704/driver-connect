@@ -3,3 +3,7 @@ allowBuilds:
   '@prisma/engines': true
   prisma: true
   unrs-resolver: true
+
+# Security patch within the existing major version used by the lint toolchain.
+overrides:
+  "brace-expansion@5.0.9": 5.0.12
