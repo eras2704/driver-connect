@@ -882,3 +882,7 @@ select, textarea { font: inherit; }
 .profile-headline-preview p { font: 750 clamp(1.4rem,3vw,2.2rem)/1.15 Arial,Helvetica,sans-serif; letter-spacing: -.035em; overflow-wrap: anywhere; text-wrap: balance; }
 .reference-hero-copy .is-custom-headline { font-size: clamp(2.2rem,4.8vw,4rem); line-height: 1.08; }
 @media(max-width:600px) { .reference-hero-copy .is-custom-headline { font-size: clamp(1.8rem,6.5vw,2.5rem); } }
+
+.reference-hero:not(.has-photo) .reference-hero-copy { width: min(100%,43rem); }
+.reference-hero:not(.has-photo) .reference-location { display: none; }
+.reference-featured-vehicle:not(.has-photo) .reference-featured-copy { width: 100%; min-height: 0; }
