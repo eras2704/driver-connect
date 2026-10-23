@@ -96,7 +96,7 @@ test("foto personal en ambos paneles, carga conjunta, reemplazo y privacidad", {
       assert.equal((await database.driver.findUniqueOrThrow({ where: { id: b.id } })).portraitStorageKey, null);
       await database.driver.update({ where: { id: a.id }, data: { active: true } });
       const publicHtml = await (await fetch(`${base}/conductor/${a.slug}`)).text();
-      assert.match(publicHtml, new RegExp(`class="avatar-photo"[^>]+src="${portraitUrl(second)}"`));
+      assert.match(publicHtml, new RegExp(`class="reference-portrait"[^>]+src="${portraitUrl(second)}"`));
       assert.equal((await media(second)).status, 200);
     });
     await t.test("el retrato funciona con la galería llena y respeta sesiones revocadas", async () => {

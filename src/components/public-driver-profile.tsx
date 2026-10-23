@@ -17,7 +17,7 @@ export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDr
   }));
   const vehicle = driver.vehicles[0];
   const uploadedVehicle = driver.photos.find(photo => photo.category === "VEHICLE");
-  const cover = vehicle?.photoUrl || (uploadedVehicle ? `/media/${uploadedVehicle.id}` : null);
+  const cover = vehicle?.photoUrl?.startsWith("/media/vehiculos/") ? vehicle.photoUrl : uploadedVehicle ? `/media/${uploadedVehicle.id}` : vehicle?.photoUrl;
   const initials = driver.name.split(/\s+/).slice(0, 2).map(name => name[0]).join("");
   const contact = `/conductor/${driver.slug}/contacto`, reserve = `/conductor/${driver.slug}/reservar`;
   const whatsapp = driver.whatsapp ? `https://wa.me/${driver.whatsapp.replace(/\D/g, "")}` : null;
@@ -78,8 +78,8 @@ export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDr
           </article>)}</div>
         </section>}
         {vehicle && <section className="reference-vehicles" id="vehiculo" aria-label={t("Vehículos del conductor", "Driver vehicles")}>
-          <article className={`reference-featured-vehicle ${vehicle.photoUrl ? "has-photo" : ""}`}>
-            {vehicle.photoUrl && <AutoFitPhoto className="reference-featured-image" src={vehicle.photoUrl} alt={`${vehicle.brand} ${vehicle.model}`} sizes="(max-width:760px) 95vw, 65vw" />}
+          <article className={`reference-featured-vehicle ${cover ? "has-photo" : ""}`}>
+            {cover && <AutoFitPhoto className="reference-featured-image" src={cover} alt={`${vehicle.brand} ${vehicle.model}`} sizes="(max-width:760px) 95vw, 65vw" />}
             <div className="reference-featured-shade" aria-hidden="true" />
             <div className="reference-featured-copy"><span className="eyebrow">{t("VEHÍCULO DESTACADO", "FEATURED VEHICLE")}</span><h2>{vehicle.brand} {vehicle.model} <span className="reference-year">{vehicle.year}</span></h2>{(language === "en" && vehicle.descriptionEn || vehicle.description) && <p>{language === "en" && vehicle.descriptionEn || vehicle.description}</p>}<dl><div><Icon name="user" /><dt>{t("Capacidad", "Capacity")}</dt><dd>{vehicle.passengers} {t("pasajeros", "passengers")}</dd></div>{vehicle.color && <div><Icon name="car" /><dt>{t("Color", "Color")}</dt><dd>{language === "en" && vehicle.colorEn || vehicle.color}</dd></div>}</dl>{driver.vehicles.length > 1 && <a className="button button-primary" href="#mas-vehiculos">{t("Ver más vehículos", "More vehicles")}<Icon name="arrow" /></a>}</div>
           </article>
