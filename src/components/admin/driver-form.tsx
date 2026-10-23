@@ -3,10 +3,13 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DriverInput } from "@/lib/validation";
+import { DEFAULT_HEADLINE_ES, DEFAULT_HEADLINE_EN } from "@/lib/profile-headline";
 import { ProfilePhotoInput } from "@/components/gallery/profile-photo-input";
 
 export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, driverPortraitUrl }: { mode?: "admin" | "driver"; id?: string; initial?: DriverInput; services: { id: string; name: string }[]; vehicleCoverUrl?: string; driverPortraitUrl?: string }) {
   const router = useRouter();
+  const [headline, setHeadline] = useState(initial?.headline || "");
+  const [headlineEn, setHeadlineEn] = useState(initial?.headlineEn || "");
   const [vehicleEnabled, setVehicleEnabled] = useState(Boolean(initial?.vehicle));
   const [pending, setPending] = useState(false);
   const [vehiclePhoto, setVehiclePhoto] = useState<File | null>(null);
@@ -22,6 +25,7 @@ export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, drive
     const text = (key: string) => String(form.get(key) || "");
     const payload = {
       name: text("name"), slug: text("slug"), phone: text("phone"), whatsapp: text("whatsapp"), email: text("email"),
+      headline: text("headline"), headlineEn: text("headlineEn"),
       location: text("location"), experience: Number(text("experience")), description: text("description"), descriptionEn: text("descriptionEn"), photoUrl: text("photoUrl"),
       languages: text("languages").split(",").map((value) => value.trim()).filter(Boolean),
       active: form.get("active") === "on", verified: form.get("verified") === "on", serviceIds: initial?.serviceIds || [],
@@ -29,7 +33,7 @@ export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, drive
     };
     setPending(true); setError(""); setErrors({});
     try {
-      const ownProfile = { name: payload.name, phone: payload.phone, whatsapp: payload.whatsapp, email: payload.email, location: payload.location, experience: payload.experience, description: payload.description, descriptionEn: payload.descriptionEn, photoUrl: payload.photoUrl, languages: payload.languages, serviceIds: payload.serviceIds, vehicle: payload.vehicle };
+      const ownProfile = { headline: payload.headline, headlineEn: payload.headlineEn, name: payload.name, phone: payload.phone, whatsapp: payload.whatsapp, email: payload.email, location: payload.location, experience: payload.experience, description: payload.description, descriptionEn: payload.descriptionEn, photoUrl: payload.photoUrl, languages: payload.languages, serviceIds: payload.serviceIds, vehicle: payload.vehicle };
       const body = mode === "driver" ? ownProfile : payload;
       const upload = driverPhoto || vehicleEnabled && vehiclePhoto ? new FormData() : null;
       if (upload) {
@@ -60,6 +64,13 @@ export function DriverForm({ id, initial, mode = "admin", vehicleCoverUrl, drive
       {field("experience", "Años de experiencia", String(initial?.experience ?? 0), "number", true)}
       {field("languages", "Idiomas", initial?.languages.join(", ") || "", "text", false, "Separa los idiomas con comas.", 400)}
       <input type="hidden" name="photoUrl" value={initial?.photoUrl || ""} /><ProfilePhotoInput kind="driver" currentUrl={driverPortraitUrl || initial?.photoUrl} disabled={pending} error={errors.driverPhoto} onChange={setDriverPhoto} mode={mode} />
+      <div className="full-width profile-headline-editor">
+        <label htmlFor="headline">Mensaje de portada<input id="headline" name="headline" value={headline} onChange={event => setHeadline(event.target.value)} maxLength={120} placeholder={DEFAULT_HEADLINE_ES} disabled={pending} aria-invalid={Boolean(errors.headline)} aria-describedby="headline-help" /></label>
+        <small id="headline-help">Personaliza la frase grande de tu perfil. Déjalo vacío para usar «{DEFAULT_HEADLINE_ES}». {headline.length}/120 caracteres.</small>
+        {errors.headline && <small className="field-error">{errors.headline}</small>}
+        <div className="profile-headline-preview"><span>Vista previa del mensaje</span><p>{headline.trim() || DEFAULT_HEADLINE_ES}</p></div>
+        <details><summary>Mensaje en inglés (opcional)</summary><label htmlFor="headlineEn">Versión en inglés<input id="headlineEn" name="headlineEn" value={headlineEn} onChange={event => setHeadlineEn(event.target.value)} maxLength={120} placeholder={DEFAULT_HEADLINE_EN} disabled={pending} aria-invalid={Boolean(errors.headlineEn)} /></label><small>Si no agregas una traducción, se mantiene tu mensaje personalizado al cambiar de idioma. {headlineEn.length}/120 caracteres.</small>{errors.headlineEn && <small className="field-error">{errors.headlineEn}</small>}</details>
+      </div>
       <label className="full-width" htmlFor="description">Presentación<textarea id="description" name="description" rows={5} maxLength={3000} defaultValue={initial?.description} />{errors.description && <small className="field-error">{errors.description}</small>}</label>
       <label className="full-width">Presentación en inglés (opcional)<textarea name="descriptionEn" rows={4} maxLength={3000} defaultValue={initial?.descriptionEn} /></label>
     </div></section>

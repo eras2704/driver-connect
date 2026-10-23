@@ -16,7 +16,7 @@ export default async function EditDriverPage({ params, searchParams }: { params:
   const vehicle = driver.vehicles.find((item) => item.active);
   const initial: DriverInput = {
     name: driver.name, slug: driver.slug, phone: driver.phone || "", whatsapp: driver.whatsapp || "", email: driver.email || "",
-    location: driver.location || "", experience: driver.experience, description: driver.description || "", descriptionEn: driver.descriptionEn || "", photoUrl: driver.photoUrl || "",
+    location: driver.location || "", experience: driver.experience, description: driver.description || "", descriptionEn: driver.descriptionEn || "", headline: driver.headline || "", headlineEn: driver.headlineEn || "", photoUrl: driver.photoUrl || "",
     languages: Array.isArray(driver.languages) ? driver.languages.filter((value): value is string => typeof value === "string") : [],
     active: driver.active, verified: driver.verified, serviceIds: driver.services.map((service) => service.id),
     vehicle: vehicle ? { brand: vehicle.brand, model: vehicle.model, year: vehicle.year, color: vehicle.color || "", colorEn: vehicle.colorEn || "", plate: vehicle.plate || "", passengers: vehicle.passengers, description: vehicle.description || "", descriptionEn: vehicle.descriptionEn || "", photoUrl: vehicle.photoUrl || "" } : null,

@@ -28,6 +28,8 @@ model Driver {
   languages   Json?
   description String?     @db.Text
   descriptionEn String?   @db.Text
+  headline String? @db.VarChar(120)
+  headlineEn String? @db.VarChar(120)
   photoUrl    String?     @db.Text
   portraitStorageKey String? @unique @db.VarChar(64)
   verified    Boolean     @default(false)

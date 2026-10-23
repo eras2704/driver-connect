@@ -10,7 +10,7 @@ export async function publicDriver(slug: string) {
   // Lista explícita de campos públicos: nunca incluir usuarios, hashes, ids o placas.
   const driver = await db().driver.findFirst({ where: { ...driverAddressWhere(slug), active: true }, select: {
     customServicesEnabled: true, customServices: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 5, select: { name: true, nameEn: true, description: true, descriptionEn: true, photoStorageKey: true } }, serviceStartsAt: true, serviceExpiresAt: true, slug: true, name: true, phone: true, whatsapp: true, email: true, location: true, experience: true,
-    languages: true, description: true, descriptionEn: true, photoUrl: true, portraitStorageKey: true, verified: true,
+    languages: true, description: true, descriptionEn: true, headline: true, headlineEn: true, photoUrl: true, portraitStorageKey: true, verified: true,
     photos: { orderBy: [{ position: "asc" }, { id: "asc" }], take: 24, select: { id: true, caption: true, category: true, width: true, height: true } },
     servicePhotos: { select: { serviceId: true, storageKey: true } },
     user: { select: { active: true } },
