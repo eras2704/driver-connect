@@ -12,8 +12,8 @@ import { ShareProfile } from "./share-profile";
 export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDriver; demo?: boolean }) {
   const { language, t } = usePublicLanguage();
   const services = driver.services.map(service => ({ ...service,
-    name: language === "en" && service.nameEn ? service.nameEn : service.name,
-    description: language === "en" && service.descriptionEn ? service.descriptionEn : service.description,
+    name: language !== "es" && service.nameEn ? service.nameEn : service.name,
+    description: language !== "es" && service.descriptionEn ? service.descriptionEn : service.description,
   }));
   const vehicle = driver.vehicles[0];
   const uploadedVehicle = driver.photos.find(photo => photo.category === "VEHICLE");
@@ -23,8 +23,8 @@ export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDr
   const whatsapp = driver.whatsapp ? `https://wa.me/${driver.whatsapp.replace(/\D/g, "")}` : null;
   const hasAction = demo || driver.bookingEnabled || Boolean(whatsapp);
   const headline = publicHeadline(driver, language);
-  const hasCustomHeadline = Boolean((language === "en" && driver.headlineEn?.trim()) || driver.headline?.trim());
-  const description = language === "en" && driver.descriptionEn || driver.description;
+  const hasCustomHeadline = Boolean((language !== "es" && driver.headlineEn?.trim()) || driver.headline?.trim());
+  const description = language !== "es" && driver.descriptionEn || driver.description;
   const portrait = (size: number) => driver.photoUrl
     ? <Image className="reference-portrait" src={driver.photoUrl} alt={driver.name} width={size} height={size} unoptimized referrerPolicy="no-referrer" />
     : <span className="reference-initials" aria-hidden="true">{initials}</span>;
@@ -74,18 +74,18 @@ export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDr
           <div className="reference-section-heading"><div><span className="eyebrow">{t("NUESTROS SERVICIOS", "OUR SERVICES")}</span><h2 id="services-title">{t("¿A dónde quieres ir?", "Where would you like to go?")}</h2></div><a href="#contacto" className="text-link">{t("Consultar", "Get in touch")}<Icon name="arrow" /></a></div>
           <div className="reference-services-grid">{services.map((service, index) => <article className="reference-service" key={`${index}-${service.name}`}>
             {service.photoUrl ? <AutoFitPhoto className="reference-service-image" src={service.photoUrl} alt={service.name} sizes="(max-width: 600px) 50vw, 40vw" /> : <div className="reference-service-placeholder" aria-hidden="true"><Icon name={service.icon || "compass"} /><span>{String(index + 1).padStart(2, "0")}</span></div>}
-            <div className="reference-service-body"><span className="reference-service-icon"><Icon name={service.icon || "compass"} /></span><div><h3>{service.name}</h3>{service.description && <p>{service.description}</p>}</div><a className="reference-service-link" href="#contacto" aria-label={t(`Consultar ${service.name}`, `Ask about ${service.name}`)}><Icon name="arrow" /></a></div>
+            <div className="reference-service-body"><span className="reference-service-icon"><Icon name={service.icon || "compass"} /></span><div><h3>{service.name}</h3>{service.description && <p>{service.description}</p>}</div><a className="reference-service-link" href="#contacto" aria-label={`${t("Consultar", "Ask about")} ${service.name}`}><Icon name="arrow" /></a></div>
           </article>)}</div>
         </section>}
         {vehicle && <section className="reference-vehicles" id="vehiculo" aria-label={t("Vehículos del conductor", "Driver vehicles")}>
           <article className={`reference-featured-vehicle ${cover ? "has-photo" : ""}`}>
             {cover && <AutoFitPhoto className="reference-featured-image" src={cover} alt={`${vehicle.brand} ${vehicle.model}`} sizes="(max-width:760px) 95vw, 65vw" />}
             <div className="reference-featured-shade" aria-hidden="true" />
-            <div className="reference-featured-copy"><span className="eyebrow">{t("VEHÍCULO DESTACADO", "FEATURED VEHICLE")}</span><h2>{vehicle.brand} {vehicle.model} <span className="reference-year">{vehicle.year}</span></h2>{(language === "en" && vehicle.descriptionEn || vehicle.description) && <p>{language === "en" && vehicle.descriptionEn || vehicle.description}</p>}<dl><div><Icon name="user" /><dt>{t("Capacidad", "Capacity")}</dt><dd>{vehicle.passengers} {t("pasajeros", "passengers")}</dd></div>{vehicle.color && <div><Icon name="car" /><dt>{t("Color", "Color")}</dt><dd>{language === "en" && vehicle.colorEn || vehicle.color}</dd></div>}</dl>{driver.vehicles.length > 1 && <a className="button button-primary" href="#mas-vehiculos">{t("Ver más vehículos", "More vehicles")}<Icon name="arrow" /></a>}</div>
+            <div className="reference-featured-copy"><span className="eyebrow">{t("VEHÍCULO DESTACADO", "FEATURED VEHICLE")}</span><h2>{vehicle.brand} {vehicle.model} <span className="reference-year">{vehicle.year}</span></h2>{(language !== "es" && vehicle.descriptionEn || vehicle.description) && <p>{language !== "es" && vehicle.descriptionEn || vehicle.description}</p>}<dl><div><Icon name="user" /><dt>{t("Capacidad", "Capacity")}</dt><dd>{vehicle.passengers} {t("pasajeros", "passengers")}</dd></div>{vehicle.color && <div><Icon name="car" /><dt>{t("Color", "Color")}</dt><dd>{language !== "es" && vehicle.colorEn || vehicle.color}</dd></div>}</dl>{driver.vehicles.length > 1 && <a className="button button-primary" href="#mas-vehiculos">{t("Ver más vehículos", "More vehicles")}<Icon name="arrow" /></a>}</div>
           </article>
           {driver.vehicles.length > 1 && <div className="reference-more-vehicles" id="mas-vehiculos">{driver.vehicles.slice(1).map((car,index) => <article key={`${index}-${car.brand}-${car.model}`}>
             {car.photoUrl ? <AutoFitPhoto className="reference-other-image" src={car.photoUrl} alt={`${car.brand} ${car.model}`} sizes="(max-width:600px) 90vw, 40vw" /> : <div className="reference-car-placeholder"><Icon name="car" /></div>}
-            <div><h3>{car.brand} {car.model}</h3><p>{car.year} · {car.passengers} {t("pasajeros", "passengers")}{car.color ? ` · ${language === "en" && car.colorEn || car.color}` : ""}</p>{(language === "en" && car.descriptionEn || car.description) && <p>{language === "en" && car.descriptionEn || car.description}</p>}</div>
+            <div><h3>{car.brand} {car.model}</h3><p>{car.year} · {car.passengers} {t("pasajeros", "passengers")}{car.color ? ` · ${language !== "es" && car.colorEn || car.color}` : ""}</p>{(language !== "es" && car.descriptionEn || car.description) && <p>{language !== "es" && car.descriptionEn || car.description}</p>}</div>
           </article>)}</div>}
         </section>}
         <PhotoCarousel photos={driver.photos} language={language} />
