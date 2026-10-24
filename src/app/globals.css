@@ -350,7 +350,7 @@ a, button { touch-action: manipulation; }
 .calendar-help { font-size: .875rem; line-height: 1.7; color: var(--muted); }
 .private-url { width: 100%; border: 1px solid var(--line); border-radius: .4rem; padding: .85rem; background: var(--surface); margin: .7rem 0; font-size: .875rem; }
 .private-booking { max-width: 1080px; margin: auto; padding: 2rem 5% 5rem; }
-.private-booking-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0 2.5rem; }
+.private-booking-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 0 2.5rem; }
 .private-booking .workspace-heading { margin: 1rem 0 2rem; }
 .reservation-intro { background: var(--metal-deep); padding: 2rem; border-radius: .8rem; color: white; }
 .reservation-intro .eyebrow { color: var(--accent); }

@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
+import { translatePublic, type PublicLanguage } from "@/lib/public-locale";
 import { useId, useRef, useState } from "react";
 export type GalleryPhoto = { id: string; category: "TRIP" | "VEHICLE"; caption: string; width: number; height: number };
-export function PhotoCarousel({ photos, language = "es" }: { photos: GalleryPhoto[]; language?: "es" | "en" }) {
-  const t = (es: string, en: string) => language === "en" ? en : es;
+export function PhotoCarousel({ photos, language = "es" }: { photos: GalleryPhoto[]; language?: PublicLanguage }) {
+  const t = (es: string, en: string) => translatePublic(language, es, en);
   const [category, setCategory] = useState("ALL"), [current, setCurrent] = useState(0), track = useRef<HTMLDivElement>(null), id = useId();
   const visible = photos.filter(p => category === "ALL" || p.category === category);
   if (!photos.length) return null;
