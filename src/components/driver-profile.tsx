@@ -2,7 +2,7 @@ import { PublicDriverProfile } from "./public-driver-profile";
 import type { PublicDriver } from "@/lib/public-driver";
 const demo: PublicDriver = {
   slug: "demo", name: "Daniel Ríos", location: "Ciudad de Panamá", experience: 7, languages: ["Español", "English"],
-  phone: null, whatsapp: null, email: null, photoUrl: null, verified: false, bookingEnabled: false,
+  phone: null, whatsapp: null, email: null, photoUrl: null, verified: false, bookingEnabled: false, headline: null, headlineEn: null,
   description: "Traslados privados en Panamá, con atención a los detalles y un trato cercano. Del aeropuerto a tu próxima reunión: disfruta el camino, yo me encargo del recorrido.",
   descriptionEn: "Private transfers in Panama with thoughtful service. From the airport to your next meeting: enjoy the journey while I take care of the route.",
   photos: [],

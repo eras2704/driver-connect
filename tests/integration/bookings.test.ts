@@ -56,6 +56,31 @@ test("reservas, permisos de conductor y calendarios sin descarga de archivos", {
       const saved = await database.driver.findUniqueOrThrow({ where: { id: a.id } }); assert.equal(saved.active, true); assert.equal(saved.verified, true); assert.equal(saved.experience, 8);
       assert.equal((await database.driver.findUniqueOrThrow({ where: { id: b.id } })).experience, 7);
     });
+    await t.test("mensaje de portada editable en ambos paneles, sin alterar QR ni otros conductores", async () => {
+      const profile = { name: `Conductor a ${suffix}`, phone: "+50760000111", whatsapp: "+50760000111", email: "", location: "Panamá", experience: 8, languages: ["Español"], description: "Perfil actualizado", photoUrl: "", serviceIds: ["airport"], vehicle: null };
+      const before = await database.driver.findUniqueOrThrow({ where: { id: a.id } });
+      const headline = "Tu viaje <seguro> & a tu ritmo";
+      assert.equal((await send("/api/driver/perfil", { ...profile, headline, headlineEn: "Your journey, your way" }, a.cookie, "PATCH")).status, 200);
+      let saved = await database.driver.findUniqueOrThrow({ where: { id: a.id } });
+      assert.equal(saved.headline, headline); assert.equal(saved.headlineEn, "Your journey, your way");
+      assert.equal(saved.qrSlug, before.qrSlug); assert.equal(saved.slug, before.slug);
+      const publicHtml = await (await get(`/conductor/${a.slug}`)).text();
+      assert.ok(publicHtml.includes("Tu viaje &lt;seguro&gt; &amp; a tu ritmo"));
+      assert.ok(!publicHtml.includes("<seguro>"));
+      assert.ok((await (await get("/panel/perfil", a.cookie)).text()).includes('name="headline"'));
+      assert.equal((await database.driver.findUniqueOrThrow({ where: { id: b.id } })).headline, null);
+      // An older client omitting the optional fields must not clear a saved message.
+      assert.equal((await send("/api/driver/perfil", profile, a.cookie, "PATCH")).status, 200);
+      assert.equal((await database.driver.findUniqueOrThrow({ where: { id: a.id } })).headline, headline);
+      for (const invalid of [{ headline: "a".repeat(121) }, { headlineEn: "a".repeat(121) }]) assert.equal((await send("/api/driver/perfil", { ...profile, ...invalid }, a.cookie, "PATCH")).status, 400);
+      assert.equal((await send(`/api/admin/conductores/${a.id}`, { ...profile, slug: a.slug, active: true, verified: true, headline: "Desde administración", headlineEn: "" }, adminCookie, "PATCH")).status, 200);
+      assert.equal((await database.driver.findUniqueOrThrow({ where: { id: a.id } })).headline, "Desde administración");
+      assert.ok((await (await get(`/admin/conductores/${a.id}/editar`, adminCookie)).text()).includes('name="headline"'));
+      assert.equal((await send("/api/driver/perfil", { ...profile, headline: "", headlineEn: "" }, a.cookie, "PATCH")).status, 200);
+      saved = await database.driver.findUniqueOrThrow({ where: { id: a.id } });
+      assert.equal(saved.headline, null); assert.equal(saved.headlineEn, null); assert.equal(saved.qrSlug, before.qrSlug);
+      assert.ok(!(await (await get(`/conductor/${a.slug}`)).text()).includes('class="is-custom-headline"'));
+    });
     await t.test("solicita traslado con consentimiento, valida datos y evita duplicados", async () => {
       const path = `/api/reservas/${a.slug}`;
       assert.equal((await send(path, request, "", "POST", null)).status, 403);

@@ -23,6 +23,8 @@ export const driverSchema = z.object({
   languages: z.array(z.string().trim().min(1).max(40)).max(10),
   description: optionalText(3000),
   descriptionEn: optionalText(3000),
+  headline: z.string().trim().max(120, "El mensaje admite hasta 120 caracteres.").transform(value => value.replace(/\s+/g, " ")).optional(),
+  headlineEn: z.string().trim().max(120, "El mensaje admite hasta 120 caracteres.").transform(value => value.replace(/\s+/g, " ")).optional(),
   photoUrl: photo,
   active: z.boolean(),
   verified: z.boolean(),
