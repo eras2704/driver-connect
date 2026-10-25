@@ -1,6 +1,7 @@
 import { translatePublic, type PublicLanguage } from "./public-locale";
 
 const messages: Record<string, string> = {
+  "Este enlace cambió de conductor. Abre el perfil de nuevo y revisa a quién solicitas el viaje.": "This link changed drivers. Reopen the profile and check who you are requesting a ride from.",
   "Elige una fecha futura dentro de los próximos doce meses.": "Choose a future date within the next twelve months.",
   "La cantidad de pasajeros supera la capacidad del vehículo.": "The number of passengers exceeds the vehicle capacity.",
   "Este conductor o servicio no recibe solicitudes en este momento.": "This driver or service is not accepting requests right now.",

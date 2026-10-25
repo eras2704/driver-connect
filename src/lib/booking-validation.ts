@@ -8,7 +8,7 @@ const tripShape = {
   notes: z.string().trim().max(1000).default(""), passengers: z.number().int().min(1).max(50),
   startsAt: z.string().refine(v => { try { parsePanamaDate(v); return true; } catch { return false; } }, "Revisa la fecha y la hora de Panamá."),
 };
-export const requestBookingSchema = z.object({ ...tripShape, serviceId: line(191), requestId: z.uuid(), consent: z.literal(true, { error: "Acepta compartir estos datos con el conductor." }), website: z.literal("").default("") }).strict();
+export const requestBookingSchema = z.object({ ...tripShape, serviceId: line(191), requestId: z.uuid(), profileKey: z.string().regex(/^[a-f0-9]{64}$/).optional(), consent: z.literal(true, { error: "Acepta compartir estos datos con el conductor." }), website: z.literal("").default("") }).strict();
 export const manualBookingSchema = z.object({ ...tripShape, serviceName: line(191), duration: z.number().int().min(15).max(1440) }).strict();
 export const editBookingSchema = manualBookingSchema.extend({ version: z.number().int().min(0) }).strict();
 export const bookingStatusSchema = z.object({ status: z.enum(["CONFIRMED", "CANCELLED", "REJECTED"]), version: z.number().int().min(0) }).strict();

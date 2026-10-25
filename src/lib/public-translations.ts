@@ -1,6 +1,7 @@
 // Bundled interface copy. No translation API, network request or usage fee.
 // Driver-authored content is intentionally preserved, never machine-translated.
 export const publicTranslations: Record<string, { de: string; fr: string; pt: string }> = {
+  "This link changed drivers. Reopen the profile and check who you are requesting a ride from.": { de: "Dieser Link gehört jetzt einem anderen Fahrer. Öffnen Sie das Profil erneut und prüfen Sie, bei wem Sie die Fahrt anfragen.", fr: "Ce lien correspond maintenant à un autre chauffeur. Rouvrez le profil et vérifiez à qui vous demandez le trajet.", pt: "Este link mudou de motorista. Reabra o perfil e confira a quem você está solicitando a viagem." },
   "Expand image": { de: "Bild vergrößern", fr: "Agrandir l’image", pt: "Ampliar imagem" },
   "Close image": { de: "Bild schließen", fr: "Fermer l’image", pt: "Fechar imagem" },
   "Close": { de: "Schließen", fr: "Fermer", pt: "Fechar" },

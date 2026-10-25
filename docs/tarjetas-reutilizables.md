@@ -20,7 +20,10 @@ un único propietario; las operaciones administrativas y las reservas de
 direcciones se serializan en una transacción. Reintentar una petición con el
 mismo identificador no duplica el upgrade ni la asignación. Se exige sesión de
 administración y origen válido. Cada operación registra actor, fecha, QR,
-referencia y perfiles involucrados. No hay API para borrar el historial.
+referencia y perfiles involucrados. No hay API para borrar el historial. Los formularios de reserva llevan una firma
+ligada al perfil y al enlace. Un formulario antiguo sin firma o con firma del
+anterior conductor se rechaza si el QR ya pertenece a otro perfil; se pide abrir
+el perfil otra vez antes de reservar.
 
 ## Los enlaces que ya están impresos
 
