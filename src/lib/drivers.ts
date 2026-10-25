@@ -31,9 +31,12 @@ export async function saveDriver(input: DriverInput, id?: string, files: Profile
   await requireApiAdmin();
   try {
     const saved = await withProfilePhotos(files, input.vehicle, photos => db().$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM CardRegistryLock WHERE id = 1 FOR UPDATE`;
       if (id) await tx.$queryRaw`SELECT id FROM Driver WHERE id = ${id} FOR UPDATE`;
       const existing = id ? await tx.driver.findUnique({ where: { id }, select: { id: true, slug: true, qrSlug: true, active: true, serviceStartsAt: true, serviceExpiresAt: true, serviceRequiresAssignment: true, vehicles: { orderBy: [{ active: "desc" }, { createdAt: "asc" }], take: 1, select: { id: true } } } }) : null;
       if (id && !existing) throw new HttpError(404, "No se encontró el conductor.");
+      const reservedCard = await tx.physicalCard.findUnique({ where: { slug: input.slug } });
+      if (reservedCard && (!id || reservedCard.driverId !== id)) throw new HttpError(409, "Esta dirección está reservada a una tarjeta. Asígnala desde Gestión de tarjetas.", { slug: "Elige otra dirección para el perfil." });
       const owner = await tx.driver.findFirst({ where: driverAddressWhere(input.slug), select: { id: true } });
       if (owner && owner.id !== existing?.id) throw new HttpError(409, "Esta dirección pertenece a otro perfil o a una de sus tarjetas.", { slug: "Elige una dirección diferente." });
       const validServices = await tx.service.count({ where: { id: { in: input.serviceIds }, active: true } });

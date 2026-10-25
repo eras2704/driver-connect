@@ -1,0 +1,80 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { randomBytes, randomUUID } from "node:crypto";
+import { createDatabase } from "../../src/lib/database";
+import { hashToken, SESSION_COOKIE } from "../../src/lib/security";
+if (process.env.ALLOW_INTEGRATION_TESTS !== "1" || !process.env.ADMIN_USERNAME?.startsWith("ci-") || !process.env.TEST_BASE_URL) throw new Error("Requiere base desechable de CI.");
+const database = createDatabase(), base = process.env.TEST_BASE_URL!, origin = process.env.APP_ORIGIN!;
+
+test("recovered normal QR can move only after a completed premium upgrade", { timeout: 120_000 }, async () => {
+  const suffix = randomBytes(5).toString("hex"), ids: string[] = [];
+  const admin = await database.adminUser.create({ data: { username: `ci-cards-${suffix}`, name: "Admin tarjetas", passwordHash: "unused", active: true } });
+  try {
+    const token = randomBytes(32).toString("hex"), cookie = `${SESSION_COOKIE}=${token}`;
+    await database.adminSession.create({ data: { adminId: admin.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 3600_000) } });
+    for (let i = 0; i < 3; i++) {
+      const slug = `ci-cards-${i}-${suffix}`;
+      const driver = await database.driver.create({ data: { slug, qrSlug: slug, name: `Conductor tarjetas ${i}`, active: true, serviceStartsAt: new Date(), serviceExpiresAt: new Date(Date.now() + 365 * 86400_000), addresses: { create: { slug } } } });
+      ids.push(driver.id);
+    }
+    const a = await database.driver.findUniqueOrThrow({ where: { id: ids[0] } }), oldSlug = a.slug;
+    const booking = await database.booking.create({ data: { driverId: a.id, serviceName: "Reserva conservada", customerName: "Prueba CI", phone: "+50760000000", pickup: "Origen CI", destination: "Destino CI", startsAt: new Date(Date.now() + 86400_000), endsAt: new Date(Date.now() + 90000_000) } });
+    const send = (id: string, input: unknown, auth = cookie, requestOrigin = origin) => fetch(`${base}/api/admin/conductores/${id}/tarjetas`, { method: "POST", headers: { Origin: requestOrigin, Cookie: auth, "Content-Type": "application/json" }, body: JSON.stringify(input) });
+    const prepare = { action: "prepare", requestId: randomUUID(), reference: "Pedido premium CI", normalConfirmed: true };
+    assert.equal((await send(a.id, prepare, "")).status, 401);
+    assert.equal((await send(a.id, prepare, cookie, "https://invalid.example")).status, 403);
+    const driverToken = randomBytes(32).toString("hex");
+    const user = await database.driverUser.create({ data: { driverId: a.id, username: `ci-cards-driver-${suffix}`, passwordHash: "unused", active: true, mustChangePassword: false } });
+    await database.driverSession.create({ data: { userId: user.id, tokenHash: hashToken(`driver:${driverToken}`), expiresAt: new Date(Date.now() + 3600_000) } });
+    assert.equal((await send(a.id, prepare, `dc_driver_session=${driverToken}`)).status, 401);
+    assert.equal((await send(a.id, prepare)).status, 200);
+    assert.equal((await send(a.id, prepare)).status, 200);
+    assert.equal(await database.cardUpgrade.count({ where: { driverId: a.id } }), 1);
+    const upgrade = await database.cardUpgrade.findUniqueOrThrow({ where: { id: prepare.requestId } });
+    assert.equal((await fetch(`${base}/conductor/${oldSlug}`)).status, 200);
+    assert.equal((await fetch(`${base}/conductor/${upgrade.premiumSlug}`)).status, 200);
+    assert.equal((await database.driver.findUniqueOrThrow({ where: { id: a.id } })).qrSlug, oldSlug);
+    const assign = { action: "assign", requestId: randomUUID(), slug: oldSlug, reference: "Entrega reciclada CI", nfcRewritten: true };
+    assert.equal((await send(ids[1], assign)).status, 409);
+    const complete = { action: "complete", requestId: randomUUID(), upgradeId: upgrade.id, premiumTested: true, normalReturned: true };
+    assert.equal((await send(ids[1], complete)).status, 409);
+    assert.equal((await send(a.id, { ...complete, normalReturned: false })).status, 400);
+    assert.equal((await send(a.id, complete)).status, 200);
+    assert.equal((await send(a.id, complete)).status, 200);
+    const upgraded = await database.driver.findUniqueOrThrow({ where: { id: a.id } });
+    assert.equal(upgraded.id, a.id); assert.equal(upgraded.name, a.name);
+    assert.equal(upgraded.serviceExpiresAt?.getTime(), a.serviceExpiresAt?.getTime());
+    assert.equal(upgraded.slug, upgrade.premiumSlug); assert.equal(upgraded.qrSlug, upgrade.premiumSlug);
+    assert.equal((await fetch(`${base}/conductor/${oldSlug}`)).status, 404);
+    assert.equal((await fetch(`${base}/conductor/${upgrade.premiumSlug}`)).status, 200);
+    const maliciousProfile = { slug: oldSlug, name: "Intento de captura", experience: 1, languages: [], active: false, verified: false, serviceIds: [], vehicle: null };
+    assert.equal((await fetch(`${base}/api/admin/conductores`, { method: "POST", headers: { Origin: origin, Cookie: cookie, "Content-Type": "application/json" }, body: JSON.stringify(maliciousProfile) })).status, 409);
+    const responses = await Promise.all([send(ids[1], assign), send(ids[2], { ...assign, requestId: randomUUID() })]);
+    assert.deepEqual(responses.map(r => r.status).sort(), [200, 409]);
+    const owner = await database.physicalCard.findUniqueOrThrow({ where: { slug: oldSlug } });
+    assert.ok([ids[1], ids[2]].includes(owner.driverId!));
+    assert.equal((await database.driverAddress.findUniqueOrThrow({ where: { slug: oldSlug } })).driverId, owner.driverId);
+    assert.equal((await database.driver.findUniqueOrThrow({ where: { id: owner.driverId! } })).qrSlug, oldSlug);
+    const html = await (await fetch(`${base}/conductor/${oldSlug}`)).text();
+    assert.ok(html.includes(owner.driverId === ids[1] ? "Conductor tarjetas 1" : "Conductor tarjetas 2"));
+    assert.ok(!html.includes(a.name));
+    assert.equal((await database.driver.findUniqueOrThrow({ where: { id: a.id } })).qrSlug, upgrade.premiumSlug);
+    assert.equal(await database.cardEvent.count({ where: { cardSlug: oldSlug, action: "RELEASE" } }), 1);
+    assert.equal(await database.cardEvent.count({ where: { cardSlug: oldSlug, action: "ASSIGN" } }), 1);
+    assert.equal((await database.booking.findUniqueOrThrow({ where: { id: booking.id } })).driverId, a.id);
+    const assigned = await database.driver.findUniqueOrThrow({ where: { id: owner.driverId! } });
+    assert.notEqual(assigned.slug, oldSlug);
+    assert.equal((await fetch(`${base}/conductor/${assigned.slug}`)).status, 200);
+  } finally {
+    const upgrades = await database.cardUpgrade.findMany({ where: { driverId: { in: ids } } });
+    const slugs = upgrades.flatMap(u => [u.normalSlug, u.premiumSlug]);
+    await database.cardEvent.deleteMany({ where: { cardSlug: { in: slugs } } });
+    await database.physicalCard.deleteMany({ where: { slug: { in: slugs } } });
+    await database.cardUpgrade.deleteMany({ where: { driverId: { in: ids } } });
+    await database.booking.deleteMany({ where: { driverId: { in: ids } } });
+    await database.driverUser.deleteMany({ where: { driverId: { in: ids } } });
+    await database.driver.deleteMany({ where: { id: { in: ids } } });
+    await database.adminUser.delete({ where: { id: admin.id } });
+    await database.$disconnect();
+  }
+});
