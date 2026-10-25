@@ -6,6 +6,7 @@ import { PublicLanguageSelect, usePublicLanguage } from "./public-language";
 import { publicHeadline } from "@/lib/profile-headline";
 import { Icon } from "./icon";
 import { AutoFitPhoto } from "./auto-fit-photo";
+import { ServicePhoto } from "./service-photo";
 import { PhotoCarousel } from "./gallery/photo-carousel";
 import { ShareProfile } from "./share-profile";
 
@@ -73,7 +74,7 @@ export function PublicDriverProfile({ driver, demo = false }: { driver: PublicDr
         {services.length > 0 && <section className="reference-services" id="servicios" aria-labelledby="services-title">
           <div className="reference-section-heading"><div><span className="eyebrow">{t("NUESTROS SERVICIOS", "OUR SERVICES")}</span><h2 id="services-title">{t("¿A dónde quieres ir?", "Where would you like to go?")}</h2></div><a href="#contacto" className="text-link">{t("Consultar", "Get in touch")}<Icon name="arrow" /></a></div>
           <div className="reference-services-grid">{services.map((service, index) => <article className="reference-service" key={`${index}-${service.name}`}>
-            {service.photoUrl ? <AutoFitPhoto className="reference-service-image" src={service.photoUrl} alt={service.name} sizes="(max-width: 600px) 50vw, 40vw" /> : <div className="reference-service-placeholder" aria-hidden="true"><Icon name={service.icon || "compass"} /><span>{String(index + 1).padStart(2, "0")}</span></div>}
+            {service.photoUrl ? <ServicePhoto src={service.photoUrl} name={service.name} language={language} /> : <div className="reference-service-placeholder" aria-hidden="true"><Icon name={service.icon || "compass"} /><span>{String(index + 1).padStart(2, "0")}</span></div>}
             <div className="reference-service-body"><span className="reference-service-icon"><Icon name={service.icon || "compass"} /></span><div><h3>{service.name}</h3>{service.description && <p>{service.description}</p>}</div><a className="reference-service-link" href="#contacto" aria-label={`${t("Consultar", "Ask about")} ${service.name}`}><Icon name="arrow" /></a></div>
           </article>)}</div>
         </section>}

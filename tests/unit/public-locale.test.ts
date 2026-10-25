@@ -18,7 +18,7 @@ test("detects regional browser languages in order and falls back to English", ()
 });
 
 test("all bundled public profile, gallery, sharing and reservation copy has translations", () => {
-  const files = ["components/public-driver-profile.tsx", "components/theme-control.tsx", "components/gallery/photo-carousel.tsx", "components/share-profile.tsx", "components/booking/trip-form.tsx", "components/booking/public-reservation.tsx"];
+  const files = ["components/service-photo.tsx", "components/public-driver-profile.tsx", "components/theme-control.tsx", "components/gallery/photo-carousel.tsx", "components/share-profile.tsx", "components/booking/trip-form.tsx", "components/booking/public-reservation.tsx"];
   for (const file of files) {
     const source = readFileSync(new URL(`../../src/${file}`, import.meta.url), "utf8");
     for (const match of source.matchAll(/\bt\("[^"\n]*", "([^"\n]*)"\)/g)) {

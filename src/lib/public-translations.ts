@@ -1,6 +1,13 @@
 // Bundled interface copy. No translation API, network request or usage fee.
 // Driver-authored content is intentionally preserved, never machine-translated.
 export const publicTranslations: Record<string, { de: string; fr: string; pt: string }> = {
+  "Expand image": { de: "Bild vergrößern", fr: "Agrandir l’image", pt: "Ampliar imagem" },
+  "Close image": { de: "Bild schließen", fr: "Fermer l’image", pt: "Fechar imagem" },
+  "Close": { de: "Schließen", fr: "Fermer", pt: "Fechar" },
+  "Expanded image; scroll to read the details": { de: "Vergrößertes Bild: zum Lesen der Details scrollen", fr: "Image agrandie : faites défiler pour lire les détails", pt: "Imagem ampliada: role para ler os detalhes" },
+  "Zoom out": { de: "Verkleinern", fr: "Réduire", pt: "Diminuir" },
+  "Zoom in": { de: "Vergrößern", fr: "Agrandir", pt: "Aumentar" },
+  "Fit to screen": { de: "An Bildschirm anpassen", fr: "Adapter à l’écran", pt: "Ajustar à tela" },
   "Choose a future date within the next twelve months.": { de: "Wählen Sie ein zukünftiges Datum innerhalb der nächsten zwölf Monate.", fr: "Choisissez une date future dans les douze prochains mois.", pt: "Escolha uma data futura nos próximos doze meses." },
   "The number of passengers exceeds the vehicle capacity.": { de: "Die Anzahl der Fahrgäste übersteigt die Fahrzeugkapazität.", fr: "Le nombre de passagers dépasse la capacité du véhicule.", pt: "O número de passageiros excede a capacidade do veículo." },
   "This driver or service is not accepting requests right now.": { de: "Dieser Fahrer oder diese Leistung nimmt derzeit keine Anfragen an.", fr: "Ce chauffeur ou ce service n’accepte pas de demandes actuellement.", pt: "Este motorista ou serviço não está recebendo solicitações no momento." },
