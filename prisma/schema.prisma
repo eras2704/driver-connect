@@ -42,9 +42,53 @@ model Driver {
   bookings    Booking[]
   photos      DriverPhoto[]
   servicePhotos DriverServicePhoto[]
+  cards PhysicalCard[]
 }
 
-// Todas las direcciones quedan reservadas al mismo perfil para conservar tarjetas.
+// A physical card can be reused; profile data and private bookings never move.
+model PhysicalCard {
+  slug String @id @db.VarChar(191)
+  kind String @db.VarChar(16)
+  driverId String? @db.VarChar(191)
+  releaseUpgradeId String? @db.VarChar(36)
+  createdAt DateTime @default(now())
+  driver Driver? @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  @@index([driverId])
+}
+
+model CardUpgrade {
+  id String @id @db.VarChar(36)
+  driverId String @db.VarChar(191)
+  normalSlug String @db.VarChar(191)
+  premiumSlug String @unique @db.VarChar(191)
+  reference String @db.VarChar(191)
+  status String @db.VarChar(16)
+  createdBy String @db.VarChar(191)
+  completedBy String? @db.VarChar(191)
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+  @@index([driverId, status])
+}
+
+model CardEvent {
+  id String @id @db.VarChar(36)
+  cardSlug String @db.VarChar(191)
+  action String @db.VarChar(16)
+  fromDriverId String? @db.VarChar(191)
+  toDriverId String? @db.VarChar(191)
+  adminId String @db.VarChar(191)
+  reference String @db.VarChar(191)
+  createdAt DateTime @default(now())
+  @@index([cardSlug, createdAt])
+  @@index([toDriverId, createdAt])
+}
+
+// Serializes address reservations and card stock operations across administrators.
+model CardRegistryLock {
+  id Int @id
+}
+
+// Historical service renewals; card upgrades do not change subscription dates.
 model ServicePeriod {
   id String @id @db.VarChar(36)
   driverId String
@@ -59,6 +103,7 @@ model ServicePeriod {
   @@index([driverId, createdAt])
 }
 
+// Addresses stay with the profile except an explicitly recovered normal card.
 model DriverAddress {
   slug     String @id @db.VarChar(191)
   driverId String @db.VarChar(191)

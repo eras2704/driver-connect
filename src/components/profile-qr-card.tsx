@@ -11,7 +11,7 @@ export async function ProfileQrCard({ slug, qrSlug = slug, name, published }: { 
     <div className="profile-qr-content">
       <span className="eyebrow">TU TARJETA NFC</span>
       <h2>QR de {name}</h2>
-      <p>Tu QR conserva su enlace aunque administración cambie la dirección del perfil. Las tarjetas ya entregadas siguen funcionando.</p>
+      <p>Tu QR conserva su enlace al editar el perfil. Solo administración puede liberar una tarjeta normal recuperada al completar un upgrade a premium; en ese caso, este perfil utiliza su nuevo QR premium.</p>
       {slug !== qrSlug && <p>Dirección actual: <a href={`/conductor/${slug}`}>{`${origin}/conductor/${slug}`}</a></p>}
       {!published && <p className="form-success" role="status">Perfil en borrador: el QR ya está listo, pero el enlace funcionará cuando se publique el perfil.</p>}
       <label className="profile-qr-url">Enlace para grabar en la tarjeta NFC<input readOnly value={qr.url} aria-label="Enlace para la tarjeta NFC" /></label>

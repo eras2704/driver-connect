@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePublicLanguage } from "../public-language";
 import { publicBookingError } from "@/lib/public-booking-error";
 import type { ManualBookingInput } from "@/lib/booking-validation";
-export function TripForm({ slug, services = [], initial, id, version = 0, defaultServiceId = "" }: { defaultServiceId?: string; slug?: string; services?: { id: string; name: string; nameEn?: string | null }[]; initial?: ManualBookingInput; id?: string; version?: number }) {
+export function TripForm({ slug, services = [], initial, id, version = 0, defaultServiceId = "", profileKey }: { profileKey?: string; defaultServiceId?: string; slug?: string; services?: { id: string; name: string; nameEn?: string | null }[]; initial?: ManualBookingInput; id?: string; version?: number }) {
   const { language, t } = usePublicLanguage(Boolean(slug));
   const router = useRouter(), nonce = useRef("");
   const [pending, setPending] = useState(false), [error, setError] = useState("");
@@ -16,7 +16,7 @@ export function TripForm({ slug, services = [], initial, id, version = 0, defaul
     const form = new FormData(event.currentTarget), text = (key: string) => String(form.get(key) || "");
     const data = { customerName: text("customerName"), phone: text("phone"), email: text("email"), pickup: text("pickup"), destination: text("destination"), startsAt: text("startsAt"), passengers: Number(text("passengers")), notes: text("notes") };
     if (!nonce.current) nonce.current = crypto.randomUUID();
-    const payload = slug ? { ...data, serviceId: text("serviceId"), requestId: nonce.current, consent: form.get("consent") === "on", website: text("website") } : { ...data, serviceName: text("serviceName"), duration: Number(text("duration")), ...(id ? { version } : {}) };
+    const payload = slug ? { ...data, serviceId: text("serviceId"), ...(profileKey ? { profileKey } : {}), requestId: nonce.current, consent: form.get("consent") === "on", website: text("website") } : { ...data, serviceName: text("serviceName"), duration: Number(text("duration")), ...(id ? { version } : {}) };
     setPending(true); setError(""); setErrors({});
     try {
       const response = await fetch(slug ? `/api/reservas/${slug}` : `/api/driver/agenda${id ? `/${id}` : ""}`, { method: id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });

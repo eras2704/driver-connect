@@ -7,6 +7,7 @@ import { requireApiDriver, requireDriver } from "./driver-session";
 import { HttpError } from "./http";
 import { parsePanamaDate, monthRange, type TripStatus } from "./calendar";
 import { hashToken } from "./security";
+import { bookingProfileKey } from "./booking-binding";
 import { limitRequests } from "./request-limit";
 import { passengerPath } from "./calendar-access";
 import type { ManualBookingInput, RequestBookingInput } from "./booking-validation";
@@ -25,6 +26,8 @@ export async function requestBooking(slug: string, input: RequestBookingInput) {
   const driver = await db().driver.findFirst({ where: driverAddressWhere(slug), select: { id: true, customServicesEnabled: true, customServices: { where: { id: input.serviceId, active: true }, select: { name: true } }, active: true, serviceStartsAt: true, serviceExpiresAt: true, user: { select: { active: true } }, services: { where: { id: input.serviceId, active: true }, select: { name: true } }, vehicles: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 10, select: { passengers: true } } } });
   const selected = driver?.customServicesEnabled ? driver.customServices : driver?.services;
   if (!driver?.active || !serviceAvailable(driver) || !driver.user?.active || !selected?.length) throw new HttpError(404, "Este conductor o servicio no recibe solicitudes en este momento.");
+  const physicalCard = await db().physicalCard.findUnique({ where: { slug }, select: { slug: true } });
+  if ((physicalCard && !input.profileKey) || (input.profileKey && input.profileKey !== bookingProfileKey(driver.id, slug))) throw new HttpError(409, "Este enlace cambió de conductor. Abre el perfil de nuevo y revisa a quién solicitas el viaje.");
   if (driver.vehicles[0] && input.passengers > Math.max(...driver.vehicles.map(v => v.passengers))) throw new HttpError(400, "La cantidad de pasajeros supera la capacidad del vehículo.");
   const requestHash = hashToken(`booking:${driver.id}:${input.requestId}`);
   const payloadHash = hashToken(JSON.stringify(input));
